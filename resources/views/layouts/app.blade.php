@@ -134,6 +134,14 @@
 
     <!-- GitHub Buttons -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#content'))
+            .catch(error => {
+                console.error(error);
+            });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const deleteModal = document.getElementById('deleteModal');
@@ -201,6 +209,34 @@
             }
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteModal = document.getElementById('deleteModalNews');
+            const deleteForm = document.getElementById('deleteForm');
+
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget; // Bouton qui déclenche le modal
+                const newsId = button.getAttribute('data-news-id'); // Récupération de l'ID
+                const actionUrl = "{{ url('news') }}/" + newsId; // Construction de l'URL d'action
+                deleteForm.setAttribute('action', actionUrl); // Mise à jour de l'action du formulaire
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const restoreModal = document.getElementById('restoreModalNews');
+            restoreModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const newsId = button.getAttribute('data-news-id');
+                const restoreForm = document.getElementById('restoreForm');
+                const action = "{{ route('news.restore', ':id') }}".replace(':id', newsId);
+                restoreForm.action = action;
+            });
+        });
+    </script>
+
 
 
     @yield('scripts')

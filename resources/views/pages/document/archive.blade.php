@@ -95,13 +95,13 @@
                         <td>
                        
 
-                            <!-- Bouton de suppression -->
+                            <!-- Bouton de restauration -->
                             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
                                 data-bs-target="#restoreModal" data-document-id="{{ $document->id }}">
                                 <i class="bx bx-undo me-1"></i>
                             </button>
 
-                            <!-- Modale de confirmation de suppression -->
+                            <!-- Modale de confirmation de restauration -->
                             <div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel"
                                 aria-hidden="true">
                                 <div class="modal-dialog">

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Documents;
+use App\Models\News;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,11 +15,19 @@ class AuthController extends Controller
     {
         return view('pages.login');
     }
+   
+
     public function showAdminDashboard()
     {
         $userConnected = Auth::user();
-        return view('index',compact('userConnected'));
+        $users = User::all();
+        $news = News::all();
+        $documents = Documents::all();
+
+        return view('index', compact('users', 'news', 'userConnected', 'documents'));
     }
+
+
     public function showMembreDashboard()
     {
         return view('membre');

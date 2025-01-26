@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Documents\DocumentController;
+use App\Http\Controllers\News\NewsController;
 use App\Http\Controllers\usersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -69,6 +70,20 @@ Route::prefix('documents')->group(function () {
 
     Route::get('create-document', [DocumentController::class, 'showStoreDocument'])->name('store-document');
     Route::get('/{id}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
+
+});
+
+Route::prefix('news')->group(function () {
+  
+    Route::get('create', [NewsController::class, 'showStoreNews'])->name('store-news');
+    Route::post('store', [NewsController::class, 'store'])->name('news.store');
+    Route::get('{news}/edit', [NewsController::class, 'edit'])->name('news.edit');
+    Route::put('{news}', [NewsController::class, 'update'])->name('news.update');
+    Route::get('/', [NewsController::class, 'index'])->name('news.index');
+    Route::get('archived', [NewsController::class, 'indexArchived'])->name('news.archived');
+    Route::delete('delete/{id}', [NewsController::class, 'delete'])->name('news.delete');
+    Route::post('restore/{id}', [NewsController::class, 'restore'])->name('news.restore');
+
 
 });
 

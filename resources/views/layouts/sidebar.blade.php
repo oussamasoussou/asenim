@@ -18,7 +18,7 @@
   <ul class="menu-inner py-1">
     <li class="menu-item">
       <a href="{{ route('users.index') }}" class="menu-link">
-        <i class="menu-icon tf-icons bx bx-user"></i>
+        <i class="menu-icon tf-icons bx bx-group"></i>
         <div data-i18n="Account Settings">Utilisateurs</div>
       </a>
     </li>
@@ -27,6 +27,12 @@
       <a href="{{ route('documents.non_archived') }}" class="menu-link">
         <i class="menu-icon tf-icons bx bxs-file-doc"></i>
         <div data-i18n="Suppliers">Documents</div>
+      </a>
+    </li>
+    <li class="menu-item">
+      <a href="{{ route('news.index') }}" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-calendar-event"></i>
+        <div data-i18n="Suppliers">Actualité / Événement</div>
       </a>
     </li>
   </ul>
