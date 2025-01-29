@@ -1,6 +1,6 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
   <div class="app-brand demo">
-    <a href="index.html" class="app-brand-link">
+    <a href="{{ route('index') }}" class="app-brand-link">
 
       </span>
       <img src="https://www.affinicia.com/wp-content/themes/affinicia/images/logos/affinicia.svg" alt="Logo"
@@ -16,6 +16,12 @@
   <hr>
 
   <ul class="menu-inner py-1">
+    <li class="menu-item">
+      <a href="{{ route('index') }}" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-home"></i>
+        <div data-i18n="Account Settings">Dashboard</div>
+      </a>
+    </li>
     <li class="menu-item">
       <a href="{{ route('users.index') }}" class="menu-link">
         <i class="menu-icon tf-icons bx bx-group"></i>

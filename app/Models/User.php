@@ -17,7 +17,7 @@ class User extends Authenticatable
         'ADMIN' => 'admin',
         'MEMBRE' => 'membre',
     ];
-
+   
     /**
      * The attributes that are mass assignable.
      *
@@ -32,6 +32,7 @@ class User extends Authenticatable
         'last_name',
         'phone',
         'image',
+        'type',
     ];
 
     /**

@@ -103,6 +103,7 @@ class usersController extends Controller
             $user->image = $validatedData['image'];
             $user->role = $validatedData['role'];
             $user->email = $validatedData['email'];
+            $user->type = $validatedData['type'];
             $user->password = Hash::make('123456789');
             $user->name = $name;
             $user->save();
@@ -181,6 +182,9 @@ class usersController extends Controller
             }
             if ($request->has('email')) {
                 $user->email = $validatedData['email'];
+            }
+            if ($request->has('type')) {
+                $user->type = $validatedData['type'];
             }
             $user->save();
 

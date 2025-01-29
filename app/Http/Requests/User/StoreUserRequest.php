@@ -33,6 +33,7 @@ class StoreUserRequest extends FormRequest
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'role' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
+            'type' => 'required|string|max:255',
         ];
     }
 

@@ -78,24 +78,21 @@ class DocumentController extends Controller
      */
     public function store(Request $request)
     {
-        // Validation des données
         $validated = $request->validate([
             'file_name' => 'required|string|max:255',
             'member_type' => 'nullable|in:permanent,non_permanent,all_members',
             'file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:10240', // Validation du fichier
         ]);
     
-        // Téléchargement du fichier
         $filePath = $request->file('file')->store('documents', 'public'); // Vous pouvez spécifier un dossier, ici 'documents'
     
-        // Créer le document dans la base de données
         $document = Documents::create([
             'file_name' => $validated['file_name'],
-            'file_path' => $filePath, // Enregistrer le chemin du fichier téléchargé
-            'member_type' => $validated['member_type'] ?? 'all_members', // Défaut à 'all_members' si non défini
+            'file_path' => $filePath,
+            'member_type' => $validated['member_type'] ?? 'all_members',
+            'user_id' => auth()->id(), 
         ]);
     
-        // Redirection avec message de succès
         return redirect()->route('documents.non_archived')->with('success', 'Document créé avec succès.');
     }
     

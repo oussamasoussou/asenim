@@ -1,62 +1,53 @@
 @extends('layouts.app')
 
-@section('title', 'Ajouter une Actualité/Événement')
+@section('title', 'Ajouter un document')
 
 @section('content')
 <div class="col-xl">
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Ajouter une Actualité/Événement</h5>
+            <h5 class="mb-0">Ajouter un document</h5>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('news.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data">
                 @csrf
 
-                <!-- Champ Titre -->
-                <div class="mb-3 row">
-                    <label for="title" class="col-md-2 col-form-label">Titre</label>
-                    <div class="col-md-10">
-                        <input class="form-control" type="text" name="title" id="title" placeholder="Titre de l'actualité ou événement" required />
+                <!-- Nom du fichier -->
+                <div class="mb-3">
+                    <label class="form-label" for="file_name">Nom du fichier</label>
+                    <div class="input-group input-group-merge">
+                        <span id="basic-icon-default-file2" class="input-group-text"><i class="bx bx-file"></i></span>
+                        <input type="text" class="form-control" id="file_name" name="file_name"
+                            value="{{ old('file_name') }}" placeholder="Nom du fichier">
                     </div>
+                    @error('file_name')
+                        <span class="text-danger">* {{ $message }}</span>
+                    @enderror
                 </div>
 
-                <!-- Champ Sélection Type -->
-                <div class="mb-3 row">
-                    <label for="type" class="col-md-2 col-form-label">Type</label>
-                    <div class="col-md-10">
-                        <select class="form-control" name="type" id="type" required>
-                            <option value="actualite">Actualité</option>
-                            <option value="evenement">Événement</option>
-                        </select>
-                    </div>
+                <!-- Type de membre -->
+                <div class="mb-3">
+                    <label for="member_type" class="form-label">Type de membre</label>
+                    <select id="member_type" name="member_type" class="form-control">
+                        <option value="all_members" {{ old('member_type') == 'all_members' ? 'selected' : '' }}>Tous les membres</option>
+                        <option value="permanent" {{ old('member_type') == 'permanent' ? 'selected' : '' }}>Permanent</option>
+                        <option value="non_permanent" {{ old('member_type') == 'non_permanent' ? 'selected' : '' }}>Non Permanent</option>
+                    </select>
+                    @error('member_type')
+                        <span class="text-danger">* {{ $message }}</span>
+                    @enderror
                 </div>
 
-                <!-- Champ Contenu avec CKEditor -->
-                <div class="mb-3 row">
-                    <label for="content" class="col-md-2 col-form-label">Contenu</label>
-                    <div class="col-md-10">
-                        <textarea id="content" name="content" class="form-control" rows="5" placeholder="Contenu de l'actualité ou événement" required></textarea>
-                    </div>
+                <!-- Upload du fichier -->
+                <div class="mb-3">
+                    <label for="file" class="form-label">Fichier</label>
+                    <input class="form-control" type="file" id="file" name="file" accept="application/pdf, image/*">
+                    @error('file')
+                        <span class="text-danger">* {{ $message }}</span>
+                    @enderror
                 </div>
 
-                <!-- Champ Date -->
-                <div class="mb-3 row">
-                    <label for="date" class="col-md-2 col-form-label">Date</label>
-                    <div class="col-md-10">
-                        <input class="form-control" type="datetime-local" name="date" id="date" required />
-                    </div>
-                </div>
-
-                <!-- Champ Image -->
-                <div class="mb-3 row">
-                    <label for="image" class="col-md-2 col-form-label">Image</label>
-                    <div class="col-md-10">
-                        <input class="form-control" type="file" name="image" id="image" />
-                    </div>
-                </div>
-
-                <!-- Bouton Sauvegarder -->
-                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                <button type="submit" class="btn btn-primary">Ajouter</button>
             </form>
         </div>
     </div>

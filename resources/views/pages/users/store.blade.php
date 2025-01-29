@@ -70,6 +70,18 @@
                     <span class="text-danger">* {{ $message }}</span>
                     @enderror
                 </div>
+                
+              
+                <div class="mb-3">
+                    <label for="type" class="form-label">Type de membre</label>
+                    <select id="type" name="type" class="form-control">
+                        <option value="permanent" {{ old('type') == 'permanent' ? 'selected' : '' }}>Permanent</option>
+                        <option value="non_permanent" {{ old('type') == 'non_permanent' ? 'selected' : '' }}>Non Permanent</option>
+                    </select>
+                    @error('type')
+                        <span class="text-danger">* {{ $message }}</span>
+                    @enderror
+                </div>
 
                 <div class="mb-3">
                     <label for="image" class="form-label">Image de profil</label>

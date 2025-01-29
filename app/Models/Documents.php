@@ -16,9 +16,15 @@ class Documents extends Model
         'file_path',
         'member_type',
         'file_name',
+        'user_id'
     ];
 
     protected $casts = [
         'member_type' => 'string',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
