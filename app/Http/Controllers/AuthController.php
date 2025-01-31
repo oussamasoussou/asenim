@@ -43,9 +43,13 @@ class AuthController extends Controller
 
             if (Auth::attempt($credentials)) {
                 $request->session()->regenerate();
-                if (auth()->user()->isMembre()) {
-                    return redirect()->route('membre');
-                } elseif (auth()->user()->isAdmin()) {
+                $user = auth()->user();
+            
+                if ($user->first_connection) {
+                    return redirect()->route('update_profile');
+                }
+            
+                if ($user->isMembre() || $user->isAdmin()) {
                     return redirect()->route('index');
                 }
             }
@@ -53,6 +57,7 @@ class AuthController extends Controller
             return back()->withErrors([
                 'email' => 'Les identifiants fournis sont incorrects.',
             ])->onlyInput('email');
+
         } catch (\Exception $e) {
             return back()->withErrors([
                 'error' => 'Une erreur est survenue lors de la tentative de connexion. Veuillez réessayer.',

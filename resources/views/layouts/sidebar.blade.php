@@ -22,12 +22,15 @@
         <div data-i18n="Account Settings">Dashboard</div>
       </a>
     </li>
-    <li class="menu-item">
-      <a href="{{ route('users.index') }}" class="menu-link">
+    @if(Auth::check() && Auth::user()->isAdmin())
+      <li class="menu-item">
+        <a href="{{ route('users.index') }}" class="menu-link">
         <i class="menu-icon tf-icons bx bx-group"></i>
         <div data-i18n="Account Settings">Utilisateurs</div>
-      </a>
-    </li>
+        </a>
+      </li>
+    @endif
+
 
     <li class="menu-item">
       <a href="{{ route('documents.non_archived') }}" class="menu-link">

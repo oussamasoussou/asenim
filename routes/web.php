@@ -30,13 +30,13 @@ Route::get('reset-password/{token}', [ResetPasswordController::class, 'showReset
 Route::post('reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 
+Route::get('index', [AuthController::class, 'showAdminDashboard'])->name('index');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['isAdmin'])->group(function () {
 
-    Route::get('index', [AuthController::class, 'showAdminDashboard'])->name('index');
     Route::get('dashboard', [AuthController::class, 'showMembreDashboard'])->name('membre');
 
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('admin/user-connected', [AuthController::class, 'userConnected'])->name('user.connected');
     Route::get('list-users', [usersController::class, 'index'])->name('users.index');
     Route::get('list-users-archives', [usersController::class, 'listArchives'])->name('users.archives');
@@ -48,9 +48,6 @@ Route::middleware(['isAdmin'])->group(function () {
     Route::put('users/{id}', [UsersController::class, 'update'])->name('users.update');
     Route::put('users/connected', [UsersController::class, 'updateUserConnected'])->name('users.connected');
     Route::delete('users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
-
-
-
 
 });
 
@@ -74,7 +71,7 @@ Route::prefix('documents')->group(function () {
 });
 
 Route::prefix('news')->group(function () {
-  
+
     Route::get('create', [NewsController::class, 'showStoreNews'])->name('store-news');
     Route::post('store', [NewsController::class, 'store'])->name('news.store');
     Route::get('{news}/edit', [NewsController::class, 'edit'])->name('news.edit');
@@ -87,6 +84,9 @@ Route::prefix('news')->group(function () {
 
 });
 
+
+Route::get('/user/edit-membre-profile/{id}', [UsersController::class, 'editMembreProfile'])->name('user.edit.connected.membre.user');
+Route::put('/user/update-membre-profile/{id}', [UsersController::class, 'updateFirstConnectionMembre'])->name('user.update.connected.membre.user');
 
 
 

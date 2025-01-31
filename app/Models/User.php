@@ -33,6 +33,14 @@ class User extends Authenticatable
         'phone',
         'image',
         'type',
+        'first_connection',
+        'institution',
+        'grade',
+        'orcid',
+        'function',
+        'biography',
+        'activities',
+        'level'
     ];
 
     /**

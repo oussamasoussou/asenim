@@ -33,6 +33,14 @@ class UpdateUserRequest extends FormRequest
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'role' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255',
+
+            'grade' => 'nullable|integer',
+            'orcid' => 'nullable|string|max:255',
+            'function' => 'nullable|string|max:255',
+            'biography' => 'nullable|string',
+            'activities' => 'nullable|string',
+            'institution' => 'nullable|string',
+            'level' => 'nullable',
         ];
     }
 

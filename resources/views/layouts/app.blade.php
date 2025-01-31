@@ -38,6 +38,16 @@
 
     <!-- Config -->
     <script src="{{ asset('assets/js/config.js') }}"></script>
+
+
+
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Bootstrap JS (avec Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <style>
         /* Personnalisation de la liste déroulante */
         .custom-select {
@@ -193,7 +203,7 @@
 
     <!-- GitHub Buttons -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/4.25.0-lts/standard/ckeditor.js"></script>
     <script>
         ClassicEditor
             .create(document.querySelector('#content'))
@@ -296,7 +306,29 @@
         });
     </script>
 
+<script>
+  // Initialiser CKEditor sur les textarea
+  CKEDITOR.replace('biographyTextarea');
+  CKEDITOR.replace('activitiesTextarea');
 
+  // Gérer la soumission du formulaire
+  document.querySelector('button[type="submit"]').addEventListener('click', function() {
+    document.getElementById('mainForm').submit();
+  });
+
+  // Aperçu de l'image sélectionnée
+  document.getElementById('fileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('preview').src = e.target.result;
+        document.getElementById('imagePreview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
 
     @yield('scripts')
 

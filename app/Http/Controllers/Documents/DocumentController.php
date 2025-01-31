@@ -34,19 +34,26 @@ class DocumentController extends Controller
         $sort = request()->get('sort', 'file_name');  // Colonne de tri
         $order = request()->get('order', 'asc'); // Ordre de tri
     
-        // Récupération des documents avec pagination et tri
-        $documents = Documents::whereNull('deleted_at')
-            ->orderBy($sort, $order)
+        // Vérification du rôle de l'utilisateur
+        $query = Documents::whereNull('deleted_at');
+    
+        if (!$userConnected->isAdmin()) { // Si ce n'est pas un admin, filtrer par user_id
+            $query->where('user_id', $userConnected->id);
+        }
+    
+        // Appliquer tri et pagination
+        $documents = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
     
         // Calcul des totaux pour la pagination
-        $totalDocuments = Documents::whereNull('deleted_at')->count();
+        $totalDocuments = $query->count();
         $totalPages = ceil($totalDocuments / $perPage);
     
         return view('pages.document.index', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage'));
     }
+    
     
     /**
      * Liste des documents archivés.
@@ -59,20 +66,26 @@ class DocumentController extends Controller
         $sort = request()->get('sort', 'file_name');  // Colonne de tri
         $order = request()->get('order', 'asc'); // Ordre de tri
     
-        // Récupération des documents avec pagination et tri
-        $documents = Documents::onlyTrashed()
-            ->orderBy($sort, $order)
+        // Vérification du rôle de l'utilisateur
+        $query = Documents::onlyTrashed();
+    
+        if (!$userConnected->isAdmin()) { // Si ce n'est pas un admin, filtrer par user_id
+            $query->where('user_id', $userConnected->id);
+        }
+    
+        // Appliquer tri et pagination
+        $documents = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
     
         // Calcul des totaux pour la pagination
-        $totalDocuments = Documents::onlyTrashed()->count();
+        $totalDocuments = $query->count();
         $totalPages = ceil($totalDocuments / $perPage);
     
         return view('pages.document.archive', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage'));
     }
-
+    
     /**
      * Stocker un nouveau document.
      */

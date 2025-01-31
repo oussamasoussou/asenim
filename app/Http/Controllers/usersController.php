@@ -30,6 +30,13 @@ class usersController extends Controller
         $userConnected = Auth::user();
         return view('pages.users.editConnectedUser', compact('userConnected'));
     }
+    public function editMembreProfile($id)
+    {
+        $userConnected = Auth::user();
+        $user = User::findOrFail($id);
+
+        return view('pages.users.editConnectedUserMembre', compact('userConnected','user'));
+    }
     public function index()
     {
         $userConnected = Auth::user();
@@ -106,6 +113,7 @@ class usersController extends Controller
             $user->type = $validatedData['type'];
             $user->password = Hash::make('123456789');
             $user->name = $name;
+            $user->first_connection = 1;
             $user->save();
 
             return redirect()->route('users.index')->with('success', 'Utilisateur créé avec succès.');
@@ -273,6 +281,108 @@ class usersController extends Controller
             return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
             return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+        }
+    }
+
+
+    public function updateFirstConnectionMembre(UpdateUserRequest $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $validatedData = $request->validated();
+
+            $new_email = $validatedData['email'];
+            if ($user->email !== $new_email) {
+                $emailExists = User::where('email', $new_email)->exists();
+                if ($emailExists) {
+                    return redirect()->back()->with('error', 'Cette adresse email est déjà utilisée.');
+                }
+            }
+
+            $new_phone = $validatedData['phone'];
+            if ($user->phone !== $new_phone) {
+                $phoneExists = User::where('phone', $new_phone)->exists();
+                if ($phoneExists) {
+                    return redirect()->back()->with('error', 'Ce téléphone est déjà utilisée.');
+                }
+            }
+
+            // Mise en forme des noms
+            $validatedData['first_name'] = strtoupper($validatedData['first_name'] ?? $user->first_name);
+            $validatedData['last_name'] = ucfirst(strtolower($validatedData['last_name'] ?? $user->last_name));
+
+            // Génération du champ 'name'
+            $name = strtoupper(substr($validatedData['first_name'], 0, 1)) . strtoupper(substr($validatedData['last_name'], 0, 1));
+
+            // Gestion de l'image
+            if ($request->hasFile('image')) {
+                // Supprimer l'ancienne image si elle existe
+                if ($user->image && Storage::exists('public/' . $user->image)) {
+                    Storage::delete('public/' . $user->image);
+                }
+
+                // Télécharger la nouvelle image
+                $imagePath = $request->file('image')->store('images', 'public');
+                $validatedData['image'] = $imagePath;
+            } else {
+                $validatedData['image'] = $user->image;
+            }
+
+            $validatedData['birth_date'] = $request->birth_date
+                ? \Carbon\Carbon::createFromFormat('Y-m-d', $request->birth_date)->format('Y-m-d')
+                : $user->birth_date;
+
+            if ($request->has('first_name')) {
+                $user->first_name = $validatedData['first_name'];
+            }
+            if ($request->has('last_name')) {
+                $user->last_name = $validatedData['last_name'];
+            }
+            if ($request->has('phone')) {
+                $user->phone = $validatedData['phone'];
+            }
+            if ($request->has('image')) {
+                $user->image = $validatedData['image'];
+            }
+            if ($request->has('role')) {
+                $user->role = $validatedData['role'];
+            }
+            if ($request->has('email')) {
+                $user->email = $validatedData['email'];
+            }
+            if ($request->has('type')) {
+                $user->type = $validatedData['type'];
+            }
+            if ($request->has('institution')) {
+                $user->institution = $validatedData['institution'];
+            }
+            if ($request->has('grade')) {
+                $user->grade = $validatedData['grade'];
+            }
+            if ($request->has('orcid')) {
+                $user->orcid = $validatedData['orcid'];
+            }
+            if ($request->has('function')) {
+                $user->function = $validatedData['function'];
+            }
+            if ($request->has('biography')) {
+                $user->biography = $validatedData['biography'];
+            }
+            if ($request->has('activities')) {
+                $user->activities = $validatedData['activities'];
+            }
+            if ($request->has('level')) {
+                $user->level = $validatedData['level'];
+            }
+            $user->save();
+
+
+            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+        } catch (\Exception $e) {
+            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
         }
     }
 
