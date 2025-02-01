@@ -11,8 +11,7 @@
         <div class="card-body">
             <form method="POST" action="{{ route('documents.update', $documents->id) }}" enctype="multipart/form-data">
                 @csrf
-                @method('PUT') <!-- Important pour indiquer que c'est une mise à jour -->
-
+                @method('PUT') 
                 <!-- Nom du fichier -->
                 <div class="mb-3">
                     <label class="form-label" for="file_name">Nom du fichier</label>

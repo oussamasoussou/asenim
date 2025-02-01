@@ -41,7 +41,6 @@
                 </div>
 
 
-                <!-- Champ Contenu avec CKEditor -->
                 <div class="mb-3 row">
                     <label for="content" class="col-md-2 col-form-label">Contenu</label>
                     <div class="col-md-10">
