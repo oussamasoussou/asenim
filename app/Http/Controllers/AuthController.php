@@ -36,35 +36,45 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
+            // Valider les champs email et password
             $credentials = $request->validate([
                 'email' => ['required', 'email'],
                 'password' => ['required'],
             ]);
-
+    
+            // Tenter de connecter l'utilisateur
             if (Auth::attempt($credentials)) {
-                $request->session()->regenerate();
-                $user = auth()->user();
-            
-                if ($user->first_connection) {
-                    return redirect()->route('update_profile');
+                $request->session()->regenerate(); // Régénérer la session pour éviter les attaques de fixation de session
+                $user = Auth::user(); // Récupérer l'utilisateur connecté
+    
+                // Vérifier si l'utilisateur est un administrateur
+                if ($user->isAdmin()) {
+                    return redirect()->route('index'); // Rediriger vers l'index pour les administrateurs
                 }
-            
-                if ($user->isMembre() || $user->isAdmin()) {
-                    return redirect()->route('index');
+    
+                // Vérifier si l'utilisateur est un membre
+                if ($user->isMembre()) {
+                    // Vérifier si c'est la première connexion
+                    if ($user->first_connection == 1) {
+                        return redirect()->route('user.edit.connected.membre.user', $user->id); // Rediriger vers la page de mise à jour du profil
+                    } else {
+                        return redirect()->route('index'); // Rediriger vers l'index pour les membres déjà connectés
+                    }
                 }
             }
-
+    
+            // Si l'authentification échoue, retourner une erreur
             return back()->withErrors([
                 'email' => 'Les identifiants fournis sont incorrects.',
             ])->onlyInput('email');
-
+    
         } catch (\Exception $e) {
+            // En cas d'erreur, retourner un message d'erreur générique
             return back()->withErrors([
                 'error' => 'Une erreur est survenue lors de la tentative de connexion. Veuillez réessayer.',
             ]);
         }
     }
-
 
     public function logout(Request $request)
     {

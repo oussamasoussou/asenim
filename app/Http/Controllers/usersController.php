@@ -375,6 +375,7 @@ class usersController extends Controller
             if ($request->has('level')) {
                 $user->level = $validatedData['level'];
             }
+            $user->first_connection = 0;
             $user->save();
 
 
