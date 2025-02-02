@@ -25,6 +25,18 @@ class usersController extends Controller
         $userConnected = Auth::user();
         return view('pages.users.edit', compact('user', 'userConnected'));
     }
+    public function editProfessionnelle($id)
+    {
+        $user = User::findOrFail($id);
+        $userConnected = Auth::user();
+        return view('pages.users.editProfessionnelle', compact('user', 'userConnected'));
+    }
+    public function editBiography($id)
+    {
+        $user = User::findOrFail($id);
+        $userConnected = Auth::user();
+        return view('pages.users.editBiography', compact('user', 'userConnected'));
+    }
     public function editConnectedUser()
     {
         $userConnected = Auth::user();
@@ -35,7 +47,7 @@ class usersController extends Controller
         $userConnected = Auth::user();
         $user = User::findOrFail($id);
 
-        return view('pages.users.editConnectedUserMembre', compact('userConnected','user'));
+        return view('pages.users.editConnectedUserMembre', compact('userConnected', 'user'));
     }
     public function index()
     {
@@ -121,6 +133,8 @@ class usersController extends Controller
             return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la création de l\'utilisateur. Veuillez réessayer.');
         }
     }
+
+    // ------------------------------------ User
     public function update(UpdateUserRequest $request, $id)
     {
         try {
@@ -204,6 +218,56 @@ class usersController extends Controller
             return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
         }
     }
+    public function updateProfessionnelleUser(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+
+            if ($request->has('institution')) {
+                $user->institution = $request->institution;
+            }
+            if ($request->has('grade')) {
+                $user->grade = $request->grade;
+            }
+            if ($request->has('orcid')) {
+                $user->orcid = $request->orcid;
+            }
+            if ($request->has('function')) {
+                $user->function = $request->function;
+            }
+            $user->save();
+
+            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+        } catch (\Exception $e) {
+            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+        }
+    }
+    public function updateBiographyUser(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            if ($request->has('biography')) {
+                $user->biography = $request->biography;
+            }
+            if ($request->has('activities')) {
+                $user->activities = $request->activities;
+            }
+
+            $user->save();
+
+            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+        } catch (\Exception $e) {
+            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+        }
+    }
+
+
     public function updateUserConnected(UpdateUserConnectedRequest $request)
     {
         try {
@@ -284,7 +348,7 @@ class usersController extends Controller
         }
     }
 
-
+    // ----------------------------- First connection membre
     public function updateFirstConnectionMembre(UpdateUserRequest $request, $id)
     {
         try {
@@ -342,18 +406,25 @@ class usersController extends Controller
             if ($request->has('phone')) {
                 $user->phone = $validatedData['phone'];
             }
-            if ($request->has('image')) {
-                $user->image = $validatedData['image'];
-            }
-            if ($request->has('role')) {
-                $user->role = $validatedData['role'];
-            }
-            if ($request->has('email')) {
-                $user->email = $validatedData['email'];
-            }
-            if ($request->has('type')) {
-                $user->type = $validatedData['type'];
-            }
+
+            $user->first_connection = 0;
+            $user->save();
+
+
+            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+        } catch (\Exception $e) {
+            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+        }
+    }
+    public function updateFirstConnectionMembreProfessionnelle(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $validatedData = $request->validated();
+
             if ($request->has('institution')) {
                 $user->institution = $validatedData['institution'];
             }
@@ -366,15 +437,33 @@ class usersController extends Controller
             if ($request->has('function')) {
                 $user->function = $validatedData['function'];
             }
+
+            $user->first_connection = 0;
+            $user->save();
+
+
+            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+        } catch (\Exception $e) {
+            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+        }
+    }
+    public function updateFirstConnectionMembreBiography(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $validatedData = $request->validated();
+
+
             if ($request->has('biography')) {
                 $user->biography = $validatedData['biography'];
             }
             if ($request->has('activities')) {
                 $user->activities = $validatedData['activities'];
             }
-            if ($request->has('level')) {
-                $user->level = $validatedData['level'];
-            }
+
             $user->first_connection = 0;
             $user->save();
 

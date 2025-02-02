@@ -42,10 +42,18 @@ Route::middleware(['isAdmin'])->group(function () {
     Route::get('list-users-archives', [usersController::class, 'listArchives'])->name('users.archives');
     Route::get('store-user', [UsersController::class, 'showStoreUsers'])->name('store-user');
     Route::post('create-user', [UsersController::class, 'store'])->name('create-user');
-    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
     Route::get('/user/editConnectedUser', [UsersController::class, 'editConnectedUser'])->name(name: 'users.editConnectedUser');
     Route::patch('/users/{id}/restore', [UsersController::class, 'restore'])->name('users.restore');
+    
+    
+    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
+    Route::get('/users/{user}/edit/professionnelle', [UsersController::class, 'editProfessionnelle'])->name('users.edit.professionnelle');
+    Route::get('/users/{user}/edit/biography', [UsersController::class, 'editBiography'])->name('users.edit.biography');
     Route::put('users/{id}', [UsersController::class, 'update'])->name('users.update');
+    Route::put('users/professionnelle/{id}', [UsersController::class, 'updateProfessionnelleUser'])->name('users.update.professionnelle');
+    Route::put('users/biography/{id}', [UsersController::class, 'updateBiographyUser'])->name('users.update.biography');
+
+
     Route::put('users/connected', [UsersController::class, 'updateUserConnected'])->name('users.connected');
     Route::delete('users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
 
