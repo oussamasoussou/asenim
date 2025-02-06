@@ -22,7 +22,7 @@
   <form method="POST" action="{{ route('user.update.connected.membre.user', $user->id) }}"
     enctype="multipart/form-data">
     @csrf
-    @method('PUT')
+    @method('post')
     <div class="tab-content mt-4" id="myTabContent">
       <!-- Onglet Infos personnelles -->
       <div class="tab-pane fade show active" id="infos-personnelles" role="tabpanel">

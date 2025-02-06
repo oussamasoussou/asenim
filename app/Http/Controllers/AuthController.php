@@ -56,7 +56,7 @@ class AuthController extends Controller
                 if ($user->isMembre()) {
                     // Vérifier si c'est la première connexion
                     if ($user->first_connection == 1) {
-                        return redirect()->route('user.edit.connected.membre.user', $user->id); // Rediriger vers la page de mise à jour du profil
+                        return redirect()->route('user.edit.personnel.membre.first', $user->id); // Rediriger vers la page de mise à jour du profil
                     } else {
                         return redirect()->route('index'); // Rediriger vers l'index pour les membres déjà connectés
                     }

@@ -37,15 +37,26 @@ class usersController extends Controller
         $userConnected = Auth::user();
         return view('pages.users.editBiography', compact('user', 'userConnected'));
     }
+   
     public function editConnectedUser()
     {
         $userConnected = Auth::user();
-        return view('pages.users.editConnectedUser', compact('userConnected'));
+        return view('pages.users.editConnected.personnel', data: compact( 'userConnected'));
+    }
+    public function editConnectedUserBiography()
+    {
+        $userConnected = Auth::user();
+        return view('pages.users.editConnected.biography', data: compact( 'userConnected'));
+    }
+    public function editConnectedProfessionnel()
+    {
+        $userConnected = Auth::user();
+        return view('pages.users.editConnected.professionnelle', data: compact( 'userConnected'));
     }
     public function editMembreProfile($id)
     {
-        $userConnected = Auth::user();
         $user = User::findOrFail($id);
+        $userConnected = Auth::user();
 
         return view('pages.users.editConnectedUserMembre', compact('userConnected', 'user'));
     }
@@ -267,7 +278,7 @@ class usersController extends Controller
         }
     }
 
-
+    // ----------------------------- Modifier profile membre ou admin connected
     public function updateUserConnected(UpdateUserConnectedRequest $request)
     {
         try {
@@ -329,14 +340,11 @@ class usersController extends Controller
             if ($request->has('phone')) {
                 $user->phone = $validatedData['phone'];
             }
-            if ($request->has('image')) {
-                $user->image = $validatedData['image'];
-            }
-            if ($request->has('role')) {
-                $user->role = $validatedData['role'];
-            }
             if ($request->has('email')) {
                 $user->email = $validatedData['email'];
+            }
+            if ($request->has('type')) {
+                $user->type = $validatedData['type'];
             }
             $user->save();
 
@@ -347,12 +355,85 @@ class usersController extends Controller
             return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
         }
     }
-
-    // ----------------------------- First connection membre
-    public function updateFirstConnectionMembre(UpdateUserRequest $request, $id)
+    public function updateUserProfessionnelle(Request $request)
     {
         try {
-            $user = User::findOrFail($id);
+            $user = Auth::user();;
+
+            if ($request->has('institution')) {
+                $user->institution = $request->institution;
+            }
+            if ($request->has('grade')) {
+                $user->grade = $request->grade;
+            }
+            if ($request->has('orcid')) {
+                $user->orcid = $request->orcid;
+            }
+            if ($request->has('function')) {
+                $user->function = $request->function;
+            }
+
+            $user->save();
+            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+        } catch (\Exception $e) {
+            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+        }
+    }
+    public function updateUserBiography(Request $request)
+    {
+        try {
+            $user = Auth::user();;
+
+            if ($request->has('biography')) {
+                $user->biography = $request->biography;
+            }
+            if ($request->has('activities')) {
+                $user->activities = $request->activities;
+            }
+
+            $user->save();
+
+
+            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+        } catch (\Exception $e) {
+            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+        }
+    }
+
+
+
+
+
+
+
+
+    // ----------------------------- First connection membre
+
+    public function editFirstConnectionPersonnelle()
+    {
+        $userConnected = Auth::user();
+        return view('pages.users.firstConnection.personnelle', data: compact( 'userConnected'));
+    }
+    public function editFirstConnectionProfessionnelle()
+    {
+        $userConnected = Auth::user();
+        return view('pages.users.firstConnection.professionnelle', data: compact( 'userConnected'));
+    }
+    public function editFirstConnectionBiography()
+    {
+        $userConnected = Auth::user();
+        return view('pages.users.firstConnection.biography', data: compact( 'userConnected'));
+    }
+
+
+    public function firstConnectionPersonnelle(UpdateUserConnectedRequest $request)
+    {
+        try {
+            $user = Auth::user();
 
             $validatedData = $request->validated();
 
@@ -360,7 +441,9 @@ class usersController extends Controller
             if ($user->email !== $new_email) {
                 $emailExists = User::where('email', $new_email)->exists();
                 if ($emailExists) {
-                    return redirect()->back()->with('error', 'Cette adresse email est déjà utilisée.');
+                    return redirect()->back()
+                        ->withErrors(['email' => 'Cette adresse email est déjà utilisée.'])
+                        ->withInput();
                 }
             }
 
@@ -368,7 +451,9 @@ class usersController extends Controller
             if ($user->phone !== $new_phone) {
                 $phoneExists = User::where('phone', $new_phone)->exists();
                 if ($phoneExists) {
-                    return redirect()->back()->with('error', 'Ce téléphone est déjà utilisée.');
+                    return redirect()->back()
+                        ->withErrors(['phone' => 'Ce téléphone est déjà utilisé.'])
+                        ->withInput();
                 }
             }
 
@@ -406,65 +491,60 @@ class usersController extends Controller
             if ($request->has('phone')) {
                 $user->phone = $validatedData['phone'];
             }
-
-            $user->first_connection = 0;
+            if ($request->has('email')) {
+                $user->email = $validatedData['email'];
+            }
+            if ($request->has('type')) {
+                $user->type = $validatedData['type'];
+            }
             $user->save();
 
-
-            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->route('user.edit.professionnelle.membre.first')->with('success', 'Utilisateur mis à jour avec succès.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
+            return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
-            return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+            return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
         }
     }
-    public function updateFirstConnectionMembreProfessionnelle(Request $request, $id)
+    public function firstConnectionProfessionnelle(Request $request)
     {
         try {
-            $user = User::findOrFail($id);
-
-            $validatedData = $request->validated();
+            $user = Auth::user();;
 
             if ($request->has('institution')) {
-                $user->institution = $validatedData['institution'];
+                $user->institution = $request->institution;
             }
             if ($request->has('grade')) {
-                $user->grade = $validatedData['grade'];
+                $user->grade = $request->grade;
             }
             if ($request->has('orcid')) {
-                $user->orcid = $validatedData['orcid'];
+                $user->orcid = $request->orcid;
             }
             if ($request->has('function')) {
-                $user->function = $validatedData['function'];
+                $user->function = $request->function;
             }
 
-            $user->first_connection = 0;
             $user->save();
-
-
-            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->route('user.edit.biography.membre.first')->with('success', 'Utilisateur mis à jour avec succès.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
             return redirect()->route('index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
         }
     }
-    public function updateFirstConnectionMembreBiography(Request $request, $id)
+    public function firstConnectionBiography(Request $request)
     {
         try {
-            $user = User::findOrFail($id);
-
-            $validatedData = $request->validated();
-
+            $user = Auth::user();;
 
             if ($request->has('biography')) {
-                $user->biography = $validatedData['biography'];
+                $user->biography = $request->biography;
             }
             if ($request->has('activities')) {
-                $user->activities = $validatedData['activities'];
+                $user->activities = $request->activities;
             }
+            $user->first_connection =0 ;
 
-            $user->first_connection = 0;
             $user->save();
 
 

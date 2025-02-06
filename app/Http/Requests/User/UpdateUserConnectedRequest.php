@@ -26,13 +26,13 @@ class UpdateUserConnectedRequest extends FormRequest
             'last_name' => 'sometimes|string|max:255',
             'phone' => [
                 'sometimes',
-                'string',
-                'regex:/^(06|07)[0-9]{8}$/'
+                'integer',
             ],
             'birth_date' => 'nullable|date',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'role' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255',
+            'type' => 'sometimes|string',
         ];
     }
 

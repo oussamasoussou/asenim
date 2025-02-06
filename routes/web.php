@@ -37,14 +37,15 @@ Route::middleware(['isAdmin'])->group(function () {
 
     Route::get('dashboard', [AuthController::class, 'showMembreDashboard'])->name('membre');
 
-    Route::get('admin/user-connected', [AuthController::class, 'userConnected'])->name('user.connected');
     Route::get('list-users', [usersController::class, 'index'])->name('users.index');
     Route::get('list-users-archives', [usersController::class, 'listArchives'])->name('users.archives');
     Route::get('store-user', [UsersController::class, 'showStoreUsers'])->name('store-user');
     Route::post('create-user', [UsersController::class, 'store'])->name('create-user');
-    Route::get('/user/editConnectedUser', [UsersController::class, 'editConnectedUser'])->name(name: 'users.editConnectedUser');
     Route::patch('/users/{id}/restore', [UsersController::class, 'restore'])->name('users.restore');
     
+
+
+   
     
     Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
     Route::get('/users/{user}/edit/professionnelle', [UsersController::class, 'editProfessionnelle'])->name('users.edit.professionnelle');
@@ -58,6 +59,38 @@ Route::middleware(['isAdmin'])->group(function () {
     Route::delete('users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
 
 });
+
+
+
+
+
+
+
+
+
+
+
+Route::get('/user/edit-connected-user', [UsersController::class, 'editConnectedUser'])->name( 'users.edit.connected.user');
+Route::get('/users/edit/professionnelle', [UsersController::class, 'editConnectedProfessionnel'])->name('users.connected.edit.professionnelle');
+Route::get('/users/edit/biography', [UsersController::class, 'editConnectedUserBiography'])->name('users.connected.edit.biography');
+
+Route::put('users', [UsersController::class, 'updateUserConnected'])->name('users.connected.update');
+Route::put('users/professionnelle', [UsersController::class, 'updateUserProfessionnelle'])->name('users.connected.update.professionnelle');
+Route::put('users/biography', [UsersController::class, 'updateUserBiography'])->name('users.connected.update.biography');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Route::prefix('documents')->group(function () {
@@ -94,9 +127,18 @@ Route::prefix('news')->group(function () {
 
 
 Route::get('/user/edit-membre-profile/{id}', [UsersController::class, 'editMembreProfile'])->name('user.edit.connected.membre.user');
-Route::put('/user/update-membre-profile/{id}', [UsersController::class, 'updateFirstConnectionMembre'])->name('user.update.connected.membre.user');
+Route::post('/user/update-membre-profile/{id}', [UsersController::class, 'firstConnectionPersonnelle'])->name('user.update.connected.membre.user');
 
 
 
+
+
+Route::get('/user/edit-connected-user', [UsersController::class, 'editFirstConnectionPersonnelle'])->name(name: 'user.edit.personnel.membre.first');
+Route::get('/users/edit/professionnelle', [UsersController::class, 'editFirstConnectionProfessionnelle'])->name('user.edit.professionnelle.membre.first');
+Route::get('/users/edit/biography', [UsersController::class, 'editFirstConnectionBiography'])->name('user.edit.biography.membre.first');
+
+Route::put('users', [UsersController::class, 'firstConnectionPersonnelle'])->name('user.update.personnel.membre.first');
+Route::post('users/professionnelle', [UsersController::class, 'firstConnectionProfessionnelle'])->name('user.update.professionnelle.membre.first');
+Route::post('users/biography', [UsersController::class, 'firstConnectionBiography'])->name('user.update.biography.membre.first');
 
 
