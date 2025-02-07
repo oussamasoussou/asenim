@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatGroupeController;
 use App\Http\Controllers\Documents\DocumentController;
 use App\Http\Controllers\News\NewsController;
 use App\Http\Controllers\usersController;
@@ -142,3 +143,8 @@ Route::post('users/professionnelle', [UsersController::class, 'firstConnectionPr
 Route::post('users/biography', [UsersController::class, 'firstConnectionBiography'])->name('user.update.biography.membre.first');
 
 
+Route::get('/chat', [ChatGroupeController::class, 'index'])->name('chat.index');
+Route::middleware('auth')->group(function () {
+    Route::post('/messages', [ChatGroupeController::class, 'sendMessage']);
+    Route::get('/messages', [ChatGroupeController::class, 'fetchMessages']);
+});

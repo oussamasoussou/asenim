@@ -34,7 +34,7 @@ class User extends Authenticatable
         'image',
         'type',
         'first_connection',
-        
+        'user_connected',
         'institution',
         'grade',
         'orcid',

@@ -154,6 +154,164 @@
         .text-red {
             color: #a00000;
         }
+
+
+
+
+
+
+
+
+        .chat-container {
+            display: flex;
+            height: 80vh;
+            background-color: #f9f9f9;
+        }
+
+        /* Liste des utilisateurs */
+        .user-list {
+            width: 25%;
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .user-list h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: whitesmoke;
+        }
+
+        .user-list ul {
+            list-style: none;
+        }
+
+        .user-list li {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #34495e;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-list li:hover {
+            background-color: #1abc9c;
+        }
+
+        /* Zone de chat */
+        .chat-area {
+            width: 75%;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+
+        /* En-tête du chat */
+        .chat-header {
+            padding: 20px;
+            background-color: #1abc9c;
+            color: #fff;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        /* Liste des messages */
+        .message-list {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ecf0f1;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+        }
+
+        .message .content {
+            max-width: 60%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .message.sent .content {
+            background-color: #1abc9c;
+            color: #fff;
+        }
+
+        .message.received .content {
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .message .time {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Zone de saisie */
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .input-area button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #0d7aa6;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-area button:hover {
+            background-color: #16a085;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .input-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-area input[type="file"] {
+            flex: 1;
+        }
     </style>
 
 </head>

@@ -46,6 +46,7 @@ class AuthController extends Controller
             if (Auth::attempt($credentials)) {
                 $request->session()->regenerate(); // Régénérer la session pour éviter les attaques de fixation de session
                 $user = Auth::user(); // Récupérer l'utilisateur connecté
+                $user->update(['user_connected' => true]);
     
                 // Vérifier si l'utilisateur est un administrateur
                 if ($user->isAdmin()) {
