@@ -247,8 +247,8 @@
         }
 
         .message.sent .content {
-            background-color: #1abc9c;
-            color: #fff;
+            background-color: #ffffff;
+            color:rgb(44, 44, 44);
         }
 
         .message.received .content {
@@ -311,6 +311,63 @@
 
         .input-area input[type="file"] {
             flex: 1;
+        }
+
+        .input-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .input-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            position: relative;
+        }
+
+        .input-container input[type="text"] {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 5px;
+        }
+
+        .file-label {
+            cursor: pointer;
+            padding: 5px;
+            font-size: 18px;
+            color: #007bff;
+        }
+
+        #file-name {
+            font-size: 14px;
+            color: #555;
+            margin-left: 10px;
+        }
+
+        button#send {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button#send:hover {
+            background: #0056b3;
         }
     </style>
 

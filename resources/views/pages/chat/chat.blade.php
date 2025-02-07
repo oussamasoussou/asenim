@@ -2,126 +2,142 @@
 
 @section('content')
 <div id="chat" class="chat-container">
-  <!-- Liste des utilisateurs -->
-  <div id="users" class="user-list">
-    <h3>Utilisateurs en ligne</h3>
-    <ul>
-        @forelse ($connectedUsers as $user)
-            <li class="user">
-                <img src="{{ asset(path: 'storage/' . $userConnected->image) }}"
-                     class="user-avatar">  
-                     &nbsp;&nbsp;{{ $user->first_name }} {{ $user->last_name }}
-            </li>
-        @empty
-            <li class="user">Aucun utilisateur en ligne</li>
-        @endforelse
-    </ul>
+    <!-- Liste des utilisateurs -->
+    <div id="users" class="user-list">
+        <h3>Utilisateurs en ligne</h3>
+        <ul>
+            @forelse ($connectedUsers as $user)
+                <li class="user">
+                    <img src="{{ asset(path: 'storage/' . $userConnected->image) }}" ² class="user-avatar">
+                    &nbsp;&nbsp;{{ $user->first_name }} {{ $user->last_name }}
+                </li>
+            @empty
+                <li class="user">Aucun utilisateur en ligne</li>
+            @endforelse
+        </ul>
+    </div>
+
+    <!-- Zone de chat -->
+    <div class="chat-area">
+        <div class="chat-header">Chat en direct</div>
+
+        <!-- Liste des messages -->
+        <div id="message-list" class="message-list"></div>
+
+        <!-- Zone de saisie -->
+        <div class="input-area">
+    <div class="input-container">
+        <input type="text" id="content" placeholder="Tapez votre message ici...">
+        <label for="file" class="file-label">
+            <i class="fas fa-paperclip"></i>
+        </label>
+        <input type="file" id="file" accept=".jpg,.jpeg,.png,.pdf,.docx,.txt" hidden>
+        <span id="file-name"></span>
+    </div>
+    <button id="send">
+        <i class="fas fa-paper-plane"></i> Envoyer
+    </button>
 </div>
-
-
-  <!-- Zone de chat -->
-  <div class="chat-area">
-      <!-- En-tête du chat -->
-      <div class="chat-header">
-          Chat en direct
-      </div>
-
-      <!-- Liste des messages -->
-      <div id="message-list" class="message-list">
-          <!-- Message reçu -->
-          <div class="message received">
-              <div class="content">
-                  <strong>Utilisateur 1:</strong>
-                  <p>Bonjour, comment ça va ?</p>
-                  <span class="time">10:42</span>
-              </div>
-          </div>
-
-          <!-- Message envoyé -->
-          <div class="message sent">
-              <div class="content">
-                  <p>Ça va bien, merci ! Et toi ?</p>
-                  <span class="time">10:43</span>
-              </div>
-          </div>
-      </div>
-
-      <!-- Zone de saisie -->
-      <div class="input-area">
-          <input type="text" id="content" placeholder="Tapez votre message ici...">
-          <button id="send">Envoyer</button>
-      </div>
-  </div>
+    </div>
 </div>
 @endsection
 
 @section('scripts')
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const messagesDiv = document.getElementById('message-list');
-    const contentInput = document.getElementById('content');
-    const sendButton = document.getElementById('send');
-    const userId = "{{ auth()->id() }}"; // Récupérer l'ID de l'utilisateur connecté depuis Blade
+    document.addEventListener('DOMContentLoaded', function () {
+        const messagesDiv = document.getElementById('message-list');
+        const contentInput = document.getElementById('content');
+        const fileInput = document.getElementById('file');
+        const sendButton = document.getElementById('send');
+        const userId = "{{ auth()->id() }}";
 
-    function fetchMessages() {
-        fetch('/messages')
-            .then(response => response.json())
-            .then(data => {
-                messagesDiv.innerHTML = '';
-                data.forEach(message => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.classList.add('message', 'mb-4');
+        function fetchMessages() {
+            fetch('/messages')
+                .then(response => response.json())
+                .then(data => {
+                    messagesDiv.innerHTML = '';
+                    data.forEach(message => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message', 'mb-4');
 
-                    // Vérifier si le message appartient à l'utilisateur connecté
-                    if (message.user_id == userId) {
-                        messageDiv.classList.add('sent'); // Message envoyé (droite)
-                    } else {
-                        messageDiv.classList.add('received'); // Message reçu (gauche)
-                    }
+                        if (message.user_id == userId) {
+                            messageDiv.classList.add('sent');
+                        } else {
+                            messageDiv.classList.add('received');
+                        }
 
-                    messageDiv.innerHTML = `
+                        messageDiv.innerHTML = `
                         <div class="content">
                             <div class="user-info">
-                                <img src="{{ asset(path: 'storage/' . $userConnected->image) }}"
-                     class="user-avatar">  
-                                <strong>${message.user.name}</strong>
+                                <img src="{{ asset(path: 'storage/' . $userConnected->image) }}" class="user-avatar">  
+                                <strong>${message.user.first_name}&nbsp;${message.user.last_name}</strong>
                             </div>
                             <p>${message.content ?? ''}</p>
-                            ${message.file_path ? `<a href="/storage/${message.file_path}" target="_blank">${message.file_name}</a>` : ''}
+                            ${message.file_path ? `
+                                <a href="/storage/${message.file_path}" target="_blank">
+                                    <i class="${getFileIcon(message.file_name)}"></i> ${message.file_name}
+                                </a>
+                            ` : ''}                            
                             <span class="time">${new Date(message.created_at).toLocaleTimeString()}</span>
                         </div>
                     `;
 
+                        messagesDiv.appendChild(messageDiv);
+                    });
 
-                    messagesDiv.appendChild(messageDiv);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 });
+        }
 
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            });
-    }
+        function getFileIcon(fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': 'fas fa-file-pdf', // Icône PDF
+                'doc': 'fas fa-file-word',
+                'docx': 'fas fa-file-word', // Icône Word
+                'xls': 'fas fa-file-excel',
+                'xlsx': 'fas fa-file-excel', // Icône Excel
+                'txt': 'fas fa-file-alt', // Icône Texte
+                'jpg': 'fas fa-file-image',
+                'jpeg': 'fas fa-file-image',
+                'png': 'fas fa-file-image', // Icône Image
+                'mp4': 'fas fa-file-video', // Icône Vidéo
+                'mp3': 'fas fa-file-audio'  // Icône Audio
+            };
 
-    sendButton.addEventListener('click', () => {
-        const content = contentInput.value;
+            return icons[extension] || 'fas fa-file'; // Icône par défaut
+        }
 
-        fetch('/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ content })
-        })
-        .then(response => response.json())
-        .then(() => {
-            contentInput.value = '';
-            fetchMessages();
+
+        sendButton.addEventListener('click', function () {
+            let content = contentInput.value;
+            let file = fileInput.files[0];
+
+            let formData = new FormData();
+            formData.append('content', content);
+            if (file) {
+                formData.append('file', file);
+            }
+
+            fetch('/messages', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Message envoyé:', data);
+                    contentInput.value = '';
+                    fileInput.value = '';
+                    fetchMessages();
+                })
+                .catch(error => console.error('Erreur:', error));
         });
+
+        fetchMessages();
+        setInterval(fetchMessages, 5000000);
     });
-
-    fetchMessages();
-    setInterval(fetchMessages, 50000);
-});
-
-
 </script>
 @endsection

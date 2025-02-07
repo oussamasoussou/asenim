@@ -44,5 +44,11 @@
         <div data-i18n="Suppliers">Actualité / Événement</div>
       </a>
     </li>
+    <li class="menu-item">
+      <a href="{{ route('chat.index') }}" class="menu-link">
+        <i class='menu-icon tf-icons bx bx-conversation'></i>
+        <div data-i18n="Suppliers">Chat</div>
+      </a>
+    </li>
   </ul>
 </aside>
