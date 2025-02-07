@@ -50,7 +50,7 @@
                         <td>
                             <!-- Bouton de restauration -->
                             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
-                                data-bs-target="#restoreModal" data-news-id="{{ $item->id }}">
+                                data-bs-target="#restoreModalNews" data-news-id="{{ $item->id }}">
                                 <i class="bx bx-undo me-1"></i>
                             </button>
 

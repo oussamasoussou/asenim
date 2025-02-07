@@ -97,17 +97,17 @@
 
                             <!-- Bouton de restauration -->
                             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
-                                data-bs-target="#restoreModal" data-document-id="{{ $document->id }}">
+                                data-bs-target="#restoreModalDocument" data-document-id="{{ $document->id }}">
                                 <i class="bx bx-undo me-1"></i>
                             </button>
 
                             <!-- Modale de confirmation de restauration -->
-                            <div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel"
+                            <div class="modal fade" id="restoreModalDocument" tabindex="-1" aria-labelledby="restoreModalDocumentLabel"
                                 aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="restoreModalLabel">Confirmation de restauration</h5>
+                                            <h5 class="modal-title" id="restoreModalDocumentLabel">Confirmation de restauration</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                 aria-label="Close"></button>
                                         </div>

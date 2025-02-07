@@ -27,40 +27,57 @@ class NewsController extends Controller
     public function index()
     {
         $userConnected = Auth::user();
-    
-        $newsQuery = News::where('events_news', 'news');
-        $eventsQuery = News::where('events_news', 'event');
-    
+
+        $newsQuery = News::where('events_news', 'news')
+            ->whereHas('user', function ($query) {
+                $query->whereNull('deleted_at'); // Exclure les utilisateurs supprimés
+            });
+
+        $eventsQuery = News::where('events_news', 'event')
+            ->whereHas('user', function ($query) {
+                $query->whereNull('deleted_at');
+            });
+
         if (!$userConnected->isAdmin()) {
             $newsQuery->where('user_id', $userConnected->id);
             $eventsQuery->where('user_id', $userConnected->id);
         }
-    
-        $news = $newsQuery->get();
-        $events = $eventsQuery->get();
-    
+
+        $news = $newsQuery->with('user')->get();
+        $events = $eventsQuery->with('user')->get();
+
         return view('pages.news.index', compact('news', 'events', 'userConnected'));
     }
-    
+
+
 
     public function indexArchived()
     {
         $userConnected = Auth::user();
-    
-        $newsQuery = News::onlyTrashed()->where('events_news', 'news');
-        $eventsQuery = News::onlyTrashed()->where('events_news', 'event');
-    
+
+
+        $newsQuery = News::onlyTrashed()->where('events_news', 'news')
+            ->whereHas('user', function ($query) {
+                $query->whereNull('deleted_at');
+            });
+
+        $eventsQuery = News::onlyTrashed()->where('events_news', 'event')
+            ->whereHas('user', function ($query) {
+                $query->whereNull('deleted_at');
+            });
+
+
         if (!$userConnected->isAdmin()) {
             $newsQuery->where('user_id', $userConnected->id);
             $eventsQuery->where('user_id', $userConnected->id);
         }
-    
+
         $news = $newsQuery->get();
         $events = $eventsQuery->get();
-    
+
         return view('pages.news.archive', compact('news', 'events', 'userConnected'));
     }
-    
+
 
     public function store(Request $request)
     {

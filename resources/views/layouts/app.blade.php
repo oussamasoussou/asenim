@@ -104,6 +104,9 @@
             margin: 20px 0;
         }
 
+
+
+
         /* Card Styles */
         .card {
             background-color: #fff;
@@ -113,10 +116,6 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
 
         .card-body {
             padding: 20px;
@@ -248,7 +247,7 @@
 
         .message.sent .content {
             background-color: #ffffff;
-            color:rgb(44, 44, 44);
+            color: rgb(44, 44, 44);
         }
 
         .message.received .content {
@@ -414,13 +413,9 @@
 
     <!-- GitHub Buttons -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script>
-        ClassicEditor
-            .create(document.querySelector('#content'))
-            .catch(error => {
-                console.error(error);
-            });
-    </script>
+
+
+    <!-- ------------------------------ DELETE USER ------------------------------ -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const deleteModal = document.getElementById('deleteModal');
@@ -436,21 +431,26 @@
             }
         });
     </script>
+
+    <!-- ------------------------------ RESTORE USER ------------------------------ -->
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const restoreModal = document.getElementById('restoreModal');
             const restoreForm = document.getElementById('restoreForm');
+
             if (restoreModal) {
                 restoreModal.addEventListener('show.bs.modal', function (event) {
                     const button = event.relatedTarget;
                     const userId = button.getAttribute('data-user-id');
 
-                    restoreForm.action = `{{ route('users.restore', ':id') }}`.replace(':id', userId);
+                    restoreForm.action = `{{ url('/users') }}/${userId}/restore`; // ✅ Corrigé ici
                 });
-
             }
         });
     </script>
+
+    <!-- ------------------------------ DELETE DOCUMENT ------------------------------ -->
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -471,10 +471,11 @@
 
     </script>
 
+    <!-- ------------------------------ RESTORE DOCUMENT ------------------------------ -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const restoreModal = document.getElementById('restoreModal');
+            const restoreModal = document.getElementById('restoreModalDocument');
             const restoreForm = document.getElementById('restoreForm');
 
             if (restoreModal) {
@@ -488,6 +489,8 @@
             }
         });
     </script>
+
+    <!-- ------------------------------ DELETE NEWS & EVENT ------------------------------ -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -503,20 +506,26 @@
         });
     </script>
 
+    <!-- ------------------------------ RESTORE NEWS & EVENT ------------------------------ -->
+
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const restoreModal = document.getElementById('restoreModalNews');
-            restoreModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const newsId = button.getAttribute('data-news-id');
-                const restoreForm = document.getElementById('restoreForm');
-                const action = "{{ route('news.restore', ':id') }}".replace(':id', newsId);
-                restoreForm.action = action;
-            });
+            const restoreForm = document.getElementById('restoreForm');
+
+            if (restoreModal) {
+                restoreModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget; // Bouton qui déclenche la modale
+                    const documentId = button.getAttribute('data-news-id'); // Récupère l'ID du document
+
+                    // Met à jour l'action du formulaire avec une URL valide
+                    restoreForm.action = `{{ url('news/restore') }}/${documentId}`;
+                });
+            }
         });
+
     </script>
-
-
 
     @yield('scripts')
 

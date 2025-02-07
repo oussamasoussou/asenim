@@ -42,7 +42,7 @@ Route::middleware(['isAdmin'])->group(function () {
     Route::get('list-users-archives', [usersController::class, 'listArchives'])->name('users.archives');
     Route::get('store-user', [UsersController::class, 'showStoreUsers'])->name('store-user');
     Route::post('create-user', [UsersController::class, 'store'])->name('create-user');
-    Route::patch('/users/{id}/restore', [UsersController::class, 'restore'])->name('users.restore');
+    Route::post('/users/{id}/restore', [UsersController::class, 'restore'])->name('users.restore');
     
 
 
