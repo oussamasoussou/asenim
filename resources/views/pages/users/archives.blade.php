@@ -1,199 +1,154 @@
 @extends('layouts.app')
 
-@section('title', 'Liste des utilisateurs')
+@section('title', 'Utilisateurs Archivés')
 
 @section('content')
-<div>
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
-        <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3 mb-2 mb-sm-0">
-            <h5 class="mb-0 me-3">Liste des utilisateurs (Archivés)</h5>
-            <a href="#" class="text-decoration-none d-flex align-items-center gap-2">
-                <span class="tf-icons bx bx-archive-in"></span>
-                <a href="{{ route('users.index') }}">
-                    <h6 class="mb-0" style="color:#696cff">Désarchivés</h6>
-                </a>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1 text-dark fw-bold">Utilisateurs Archivés</h4>
+            <p class="text-muted mb-0">Comptes suspendus ou supprimés de la plateforme.</p>
+        </div>
+        <div class="d-flex gap-3 mt-3 mt-md-0">
+            <a href="{{ route('users.index') }}" class="btn btn-outline-primary rounded-pill d-flex align-items-center shadow-sm hover-lift px-4">
+                <i class="bx bx-list-ul me-2"></i> Voir les Actifs
+            </a>
+            <a href="{{ route('store-user') }}" class="btn btn-primary rounded-pill d-flex align-items-center shadow hover-lift px-4" style="background: linear-gradient(135deg, #0ea5e9, #3b82f6); border: none;">
+                <i class="bx bx-user-plus me-2"></i> Nouveau
             </a>
         </div>
-        <a href="{{ route('store-user') }}" class="btn btn-primary">
-            <span class="tf-icons bx bx-user-plus"></span>&nbsp; Ajouter un utilisateur
-        </a>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card border-0 shadow-md rounded-4 overflow-hidden" style="background-color: #fcfcfc;">
+        <!-- Search Bar -->
+        <div class="card-header bg-transparent border-bottom border-light py-3 px-4 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 text-muted fw-semibold"><i class="bx bx-archive text-secondary me-2"></i>Liste des archives</h6>
+            <div class="input-container w-auto bg-white border">
+                <i class="bx bx-search text-muted fs-5 ps-2"></i>
+                <input type="text" class="w-100" placeholder="Rechercher..." />
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light bg-opacity-75">
+                    <tr>
+                        <th class="border-0 px-4 py-3">
+                            <a href="{{ route('users.archives', ['sort' => 'name', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}" class="text-decoration-none text-muted fw-semibold d-flex align-items-center gap-1">
+                                Utilisateur
+                                <i class="bx bx-sort @if(request('sort') == 'name' && request('order') == 'asc') bx-sort-alt @elseif(request('sort') == 'name' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
+                            </a>
+                        </th>
+                        <th class="border-0 px-4 py-3">
+                            <a href="{{ route('users.archives', ['sort' => 'email', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}" class="text-decoration-none text-muted fw-semibold d-flex align-items-center gap-1">
+                                Email
+                                <i class="bx bx-sort @if(request('sort') == 'email' && request('order') == 'asc') bx-sort-alt @elseif(request('sort') == 'email' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
+                            </a>
+                        </th>
+                        <th class="border-0 px-4 py-3">Téléphone</th>
+                        <th class="border-0 px-4 py-3">Statut</th>
+                        <th class="border-0 px-4 py-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0 opacity-75">
+                    @forelse($users as $user)
+                        <tr>
+                            <td class="px-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm me-3">
+                                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 38px; height: 38px;">
+                                            {{ strtoupper(substr($user->first_name, 0, 1)) }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold text-secondary">{{ $user->first_name }} {{ $user->last_name }}</h6>
+                                        <small class="text-muted">Archivé</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-muted">{{ $user->email }}</td>
+                            <td class="px-4 py-3 text-muted">{{ $user->phone ?? '-' }}</td>
+                            <td class="px-4 py-3">
+                                <span class="badge bg-label-secondary rounded-pill px-3 py-2 fw-semibold">
+                                    <i class="bx bx-archive-in me-1"></i> Archivé
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-end">
+                                <button type="button" class="btn btn-sm btn-icon btn-light border rounded-circle shadow-none text-success" data-bs-toggle="modal" data-bs-target="#restoreModal" data-user-id="{{ $user->id }}" title="Restaurer le compte">
+                                    <i class="bx bx-undo"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="bx bx-box text-muted mb-3" style="font-size: 3rem; opacity: 0.5;"></i>
+                                <h6 class="text-muted">Aucun utilisateur archivé</h6>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer / Pagination -->
+        <div class="card-footer bg-transparent border-top border-light py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center text-muted text-sm">
+                <span>Afficher</span>
+                <form action="{{ route('users.archives') }}" method="get" class="mx-2">
+                    <select name="perPage" class="form-select form-select-sm shadow-none border bg-white rounded-pill px-3" onchange="this.form.submit()">
+                        <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                        <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                        <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
+                    </select>
+                </form>
+                <span>par page</span>
+            </div>
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm justify-content-end mb-0 gap-1">
+                    <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
+                        <a class="page-link rounded-circle" href="{{ route('users.archives', ['page' => $page - 1, 'perPage' => $perPage]) }}"><i class="bx bx-chevron-left"></i></a>
+                    </li>
+                    @for ($i = 1; $i <= $totalPages; $i++)
+                        <li class="page-item {{ $i == $page ? 'active' : '' }}">
+                            <a class="page-link rounded-circle {{ $i == $page ? 'bg-secondary border-secondary text-white shadow-sm' : 'text-secondary' }}" href="{{ route('users.archives', ['page' => $i, 'perPage' => $perPage]) }}">{{ $i }}</a>
+                        </li>
+                    @endfor
+                    <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
+                        <a class="page-link rounded-circle" href="{{ route('users.archives', ['page' => $page + 1, 'perPage' => $perPage]) }}"><i class="bx bx-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 </div>
 
-
-<div class="card">
-    <div class="d-flex justify-content-between align-items-center">
-        <h5 class="card-header">
-            <div class="input-group input-group-merge">
-                <span class="input-group-text" id="basic-addon-search31"><i class="bx bx-search"></i></span>
-                <input type="text" class="form-control" placeholder="Search..." aria-label="Search..."
-                    aria-describedby="basic-addon-search31" />
+<!-- Restore Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </h5>
-    </div>
-
-    <div class="table-responsive text-nowrap">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        <a href="{{ route('users.archives', ['sort' => 'name', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}"
-                            style="color:#566a7f">
-                            Nom & Prénom
-                            <i
-                                class="bx bx-sort @if (request('sort') == 'name' && request('order') == 'asc') bx-sort-alt @elseif (request('sort') == 'name' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{{ route('users.archives', ['sort' => 'email', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}"
-                            style="color:#566a7f">
-                            Email
-                            <i
-                                class="bx bx-sort @if (request('sort') == 'email' && request('order') == 'asc') bx-sort-alt @elseif (request('sort') == 'email' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{{ route('users.archives', ['sort' => 'phone', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}"
-                            style="color:#566a7f">
-                            Téléphone
-                            <i
-                                class="bx bx-sort @if (request('sort') == 'phone' && request('order') == 'asc') bx-sort-alt @elseif (request('sort') == 'phone' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{{ route('users.archives', ['sort' => 'role', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}"
-                            style="color:#566a7f">
-                            Rôle
-                            <i
-                                class="bx bx-sort @if (request('sort') == 'role' && request('order') == 'asc') bx-sort-alt @elseif (request('sort') == 'role' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
-                        </a>
-                    </th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Boucle à travers les utilisateurs -->
-                @foreach($users as $user)
-                    <tr>
-                        <td>{{ $user->first_name }} {{ $user->last_name }}</td>
-                        <td>{{ $user->email }}</td>
-                        <td>{{ $user->phone }}</td>
-                        <td>
-                            @if ($user->role === 'admin')
-                                <span class="badge bg-label-success me-1">Admin</span>
-                            @elseif ($user->role === 'membre')
-                                <span class="badge bg-label-primary me-1">Membre</span>
-                            @endif
-                        </td>
-                        <td>
-
-
-                            <!-- Bouton de restauration qui ouvre la modale -->
-                            <!-- Bouton de restauration -->
-                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
-                                data-bs-target="#restoreModal" data-user-id="{{ $user->id }}">
-                                <i class="bx bx-undo me-1"></i>
-                            </button>
-
-                            <!-- Modale unique -->
-                            <div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel"
-                                aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="restoreModalLabel">Confirmation de restauration</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Êtes-vous sûr de vouloir restaurer cet utilisateur ?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Annuler</button>
-                                            <form id="restoreForm" method="POST" style="display:inline-block;">
-                                                @csrf
-                                                @method('POST')
-                                                <button type="submit" class="btn btn-danger">Restaurer</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <div class="card-body">
-        <div class="row">
-            <div class="col-6">
-                <!-- Dropdown pour le nombre d'éléments par page -->
-                <form action="{{ route('users.index') }}" method="get" class="d-flex justify-content-start">
-                    <div class="form-group position-relative">
-                        <select name="perPage" id="perPage" class="form-control custom-select"
-                            onchange="this.form.submit()">
-                            <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
-                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                            <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
-                            <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
-                        </select>
-                        <!-- Flèche -->
-                        <i class="fas fa-chevron-down position-absolute"
-                            style="top: 50%; right: 10px; transform: translateY(-50%); color: #adafb2; font-size: 0.9rem;"></i>
-                    </div>
+            <div class="modal-body text-center pt-0 px-5">
+                <div class="mb-3 d-inline-flex align-items-center justify-content-center rounded-circle bg-label-success" style="width: 80px; height: 80px;">
+                    <i class="bx bx-refresh text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Restaurer</h4>
+                <p class="text-muted">Êtes-vous sûr de vouloir restaurer cet utilisateur ? Il retrouvera son accès habituel.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                <form id="restoreForm" method="POST" class="d-inline">
+                    @csrf
+                    @method('POST')
+                    <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">Oui, restaurer</button>
                 </form>
-            </div>
-
-            <div class="col-6 text-end">
-                <!-- Pagination -->
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-end">
-                        <!-- Premier bouton -->
-                        <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('users.index', ['page' => 1, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevrons-left"></i>
-                            </a>
-                        </li>
-
-                        <!-- Bouton précédent -->
-                        <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('users.index', ['page' => $page - 1, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevron-left"></i>
-                            </a>
-                        </li>
-
-                        <!-- Numéros de page -->
-                        @for ($i = 1; $i <= $totalPages; $i++)
-                            <li class="page-item {{ $i == $page ? 'active' : '' }}">
-                                <a class="page-link"
-                                    href="{{ route('users.index', ['page' => $i, 'perPage' => $perPage]) }}">{{ $i }}</a>
-                            </li>
-                        @endfor
-
-                        <!-- Bouton suivant -->
-                        <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('users.index', ['page' => $page + 1, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevron-right"></i>
-                            </a>
-                        </li>
-
-                        <!-- Dernier bouton -->
-                        <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('users.index', ['page' => $totalPages, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevrons-right"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
             </div>
         </div>
     </div>

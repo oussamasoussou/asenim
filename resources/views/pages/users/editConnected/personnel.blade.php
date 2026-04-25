@@ -13,18 +13,18 @@
                     personnelles</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('users.connected.edit.professionnelle') }}" ><i class='bx bx-align-justify'></i>
+                <a class="nav-link" href="#" ><i class='bx bx-align-justify'></i>
                     Infos professionnelles</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('users.connected.edit.biography') }}" ><i class='bx bxs-book-content'></i>
+                <a class="nav-link" href="#" ><i class='bx bxs-book-content'></i>
                     Biographie & Activités</a>
             </li>
         </ul>
       
         <div class="card mb-4">
             <h5 class="card-header">Profile Details</h5>
-            <form method="POST" action="{{ route('users.connected.update') }}" enctype="multipart/form-data">
+            <form method="POST" action="#" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="card-body">

@@ -58,6 +58,8 @@ Route::middleware(['isAdmin'])->group(function () {
 
     Route::put('users/connected', [UsersController::class, 'updateUserConnected'])->name('users.connected');
     Route::delete('users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
+    Route::get('/user/editConnectedUser', [UsersController::class, 'editConnectedUser'])->name(name: 'users.editConnectedUser');
+    Route::get('admin/user-connected', [AuthController::class, 'userConnected'])->name('user.connected');
 
 });
 
