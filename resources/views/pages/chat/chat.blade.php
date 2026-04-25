@@ -52,8 +52,22 @@
         const userId = "{{ auth()->id() }}";
 
         function fetchMessages() {
-            fetch('/messages')
-                .then(response => response.json())
+            fetch('/messages', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.reload();
+                    }
+                    const contentType = response.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        throw new TypeError("La réponse n'est pas du JSON valide.");
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     messagesDiv.innerHTML = '';
                     data.forEach(message => {
@@ -69,7 +83,7 @@
                         messageDiv.innerHTML = `
                         <div class="content">
                             <div class="user-info">
-                                <img src="{{ asset(path: 'storage/' . $userConnected->image) }}" class="user-avatar">  
+                                <img src="{{ asset('storage/' . $userConnected->image) }}" class="user-avatar">  
                                 <strong>${message.user.first_name}&nbsp;${message.user.last_name}</strong>
                             </div>
                             <p>${message.content ?? ''}</p>
@@ -86,7 +100,8 @@
                     });
 
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                });
+                })
+                .catch(error => console.error('Erreur lors de la récupération des messages:', error));
         }
 
         function getFileIcon(fileName) {
@@ -124,9 +139,20 @@
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.reload();
+                    }
+                    const contentType = response.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        throw new TypeError("La réponse n'est pas du JSON valide.");
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     console.log('Message envoyé:', data);
                     contentInput.value = '';
@@ -137,7 +163,7 @@
         });
 
         fetchMessages();
-        setInterval(fetchMessages, 5000000);
+        setInterval(fetchMessages, 5000);
     });
 </script>
 @endsection

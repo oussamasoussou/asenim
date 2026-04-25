@@ -3,197 +3,196 @@
 @section('title', 'Liste des documents')
 
 @section('content')
-<div>
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
-        <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3 mb-2 mb-sm-0">
-            <h5 class="mb-0 me-3">Liste des documents</h5>
-            <a href="#" class="text-decoration-none d-flex align-items-center gap-2">
-                <span class="tf-icons bx bx-archive-in"></span>
-                <a href="{{ route('documents.archived') }}">
-                    <h6 class="mb-0" style="color:#696cff">Archivés</h6>
-                </a>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1 text-dark fw-bold">Ressources & Documents</h4>
+            <p class="text-muted mb-0">Recherchez et téléchargez les documents de la plateforme.</p>
+        </div>
+        <div class="d-flex gap-3 mt-3 mt-md-0">
+            <a href="{{ route('documents.archived') }}" class="btn btn-outline-secondary rounded-pill d-flex align-items-center shadow-sm hover-lift px-4">
+                <i class="bx bx-archive-in me-2"></i> Voir les Archivés
+            </a>
+            <a href="{{ route('store-document') }}" class="btn btn-primary rounded-pill d-flex align-items-center shadow hover-lift px-4" style="background: linear-gradient(135deg, #0ea5e9, #3b82f6); border: none;">
+                <i class="bx bx-file-plus me-2"></i> Nouveau Document
             </a>
         </div>
-        <a href="{{ route('store-document') }}" class="btn btn-primary">
-            <span class="tf-icons bx bx-file-plus"></span>&nbsp; Ajouter un document
-        </a>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card border-0 shadow-md rounded-4 overflow-hidden">
+        <!-- Search Bar -->
+        <div class="card-header bg-white border-bottom border-light py-3 px-4 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 text-muted fw-semibold">Documents disponibles</h6>
+            <div class="input-container w-auto">
+                <i class="bx bx-search text-muted fs-5 ps-2"></i>
+                <input type="text" id="searchInput" placeholder="Rechercher un document..." value="{{ request('search') }}" class="w-100" />
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light bg-opacity-50">
+                    <tr>
+                        <th class="border-0 px-4 py-3">
+                            <a href="{{ route('documents.non_archived', ['sort' => 'file_name', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}" class="text-decoration-none text-muted fw-semibold d-flex align-items-center gap-1">
+                                Fichier
+                                <i class="bx bx-sort @if(request('sort') == 'file_name' && request('order') == 'asc') bx-sort-alt @elseif(request('sort') == 'file_name' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
+                            </a>
+                        </th>
+                        <th class="border-0 px-4 py-3">
+                            <a href="{{ route('documents.non_archived', ['sort' => 'member_type', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}" class="text-decoration-none text-muted fw-semibold d-flex align-items-center gap-1">
+                                Accessibilité
+                                <i class="bx bx-sort @if(request('sort') == 'member_type' && request('order') == 'asc') bx-sort-alt @elseif(request('sort') == 'member_type' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
+                            </a>
+                        </th>
+                        <th class="border-0 px-4 py-3">
+                            <a href="{{ route('documents.non_archived', ['sort' => 'created_at', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}" class="text-decoration-none text-muted fw-semibold d-flex align-items-center gap-1">
+                                Date d'ajout
+                                <i class="bx bx-sort @if(request('sort') == 'created_at' && request('order') == 'asc') bx-sort-alt @elseif(request('sort') == 'created_at' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
+                            </a>
+                        </th>
+                        <th class="border-0 px-4 py-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    @forelse($documents as $document)
+                        <tr>
+                            <td class="px-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-md me-3 text-primary bg-label-primary rounded-circle d-flex align-items-center justify-content-center">
+                                        <i class="bx bxs-file-pdf fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold text-dark">{{ $document->file_name }}</h6>
+                                        <small class="text-muted text-truncate d-inline-block" style="max-width: 200px;">
+                                            Document
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                @if ($document->member_type == 'permanent')
+                                    <span class="badge bg-label-info rounded-pill px-3 py-2 fw-semibold">GDI</span>
+                                @elseif ($document->member_type == 'non_permanent')
+                                    <span class="badge bg-label-success rounded-pill px-3 py-2 fw-semibold">Non permanent</span>
+                                @elseif ($document->member_type == 'all_members')
+                                    <span class="badge bg-label-primary rounded-pill px-3 py-2 fw-semibold">Tous les membres</span>
+                                @else
+                                    <span class="badge bg-label-secondary rounded-pill px-3 py-2 fw-semibold">{{ ucfirst($document->member_type) }}</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-muted">
+                                <i class="bx bx-calendar-event me-1 text-muted"></i>
+                                {{ collect(explode(' ', $document->created_at->format('d/m/Y')))->first() }}
+                            </td>
+                            <td class="px-4 py-3 text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ asset('storage/' . $document->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm d-flex align-items-center gap-1 hover-lift">
+                                        <i class="bx bx-download"></i> <span class="d-none d-md-inline">Télécharger</span>
+                                    </a>
+                                    
+                                    <a href="{{ route('documents.edit', $document->id) }}" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-info" title="Modifier">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                    
+                                    <button type="button" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-danger" data-bs-toggle="modal" data-bs-target="#deleteModalDocument" data-document-id="{{ $document->id }}" title="Supprimer">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="bx bx-folder-open text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                                <h6 class="text-muted fw-medium mb-1">Aucun document trouvé</h6>
+                                <p class="text-muted small">Essayez de modifier votre recherche ou ajoutez un nouveau document.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer / Pagination -->
+        <div class="card-footer bg-white border-top border-light py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center text-muted text-sm">
+                <span>Afficher</span>
+                <form action="{{ route('documents.non_archived') }}" method="get" class="mx-2">
+                    <select name="perPage" class="form-select form-select-sm shadow-none border-light rounded-pill px-3" onchange="this.form.submit()">
+                        <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                        <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                        <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
+                    </select>
+                </form>
+                <span>par page</span>
+            </div>
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm justify-content-end mb-0 gap-1">
+                    <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
+                        <a class="page-link rounded-circle" href="{{ route('documents.non_archived', ['page' => 1, 'perPage' => $perPage]) }}"><i class="bx bx-chevrons-left"></i></a>
+                    </li>
+                    <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
+                        <a class="page-link rounded-circle" href="{{ route('documents.non_archived', ['page' => $page - 1, 'perPage' => $perPage]) }}"><i class="bx bx-chevron-left"></i></a>
+                    </li>
+                    @for ($i = 1; $i <= $totalPages; $i++)
+                        <li class="page-item {{ $i == $page ? 'active' : '' }}">
+                            <a class="page-link rounded-circle {{ $i == $page ? 'bg-primary border-primary text-white shadow-sm' : '' }}" href="{{ route('documents.non_archived', ['page' => $i, 'perPage' => $perPage]) }}">{{ $i }}</a>
+                        </li>
+                    @endfor
+                    <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
+                        <a class="page-link rounded-circle" href="{{ route('documents.non_archived', ['page' => $page + 1, 'perPage' => $perPage]) }}"><i class="bx bx-chevron-right"></i></a>
+                    </li>
+                    <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
+                        <a class="page-link rounded-circle" href="{{ route('documents.non_archived', ['page' => $totalPages, 'perPage' => $perPage]) }}"><i class="bx bx-chevrons-right"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 </div>
 
-<div class="card">
-    <div class="d-flex justify-content-between align-items-center">
-        <h5 class="card-header">
-            <div class="input-group input-group-merge">
-                <span class="input-group-text" id="basic-addon-search31">
-                    <i class="bx bx-search"></i>
-                </span>
-                <input type="text" id="searchInput" class="form-control" placeholder="Rechercher..."
-                    aria-label="Rechercher..." aria-describedby="basic-addon-search31"
-                    value="{{ request('search') }}" />
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModalDocument" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </h5>
-    </div>
-
-    <div class="table-responsive text-nowrap">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        <a href="{{ route('documents.non_archived', ['sort' => 'file_name', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}"
-                            style="color:#566a7f">
-                            Nom du fichier
-                            <i
-                                class="bx bx-sort @if (request('sort') == 'file_name' && request('order') == 'asc') bx-sort-alt @elseif (request('sort') == 'file_name' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
-                        </a>
-                    </th>
-                    <th>Fichier</th>
-                    <th>
-                        <a href="{{ route('documents.non_archived', ['sort' => 'member_type', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}"
-                            style="color:#566a7f">
-                            Visibilité
-                            <i
-                                class="bx bx-sort @if (request('sort') == 'member_type' && request('order') == 'asc') bx-sort-alt @elseif (request('sort') == 'member_type' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
-                        </a>
-                    </th>
-                    <th>
-                        <a href="{{ route('documents.non_archived', ['sort' => 'created_at', 'order' => request('order') == 'asc' ? 'desc' : 'asc']) }}"
-                            style="color:#566a7f">
-                            Date de création
-                            <i
-                                class="bx bx-sort @if (request('sort') == 'created_at' && request('order') == 'asc') bx-sort-alt @elseif (request('sort') == 'created_at' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
-                        </a>
-                    </th>
-
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Boucle à travers les documents -->
-                @foreach($documents as $document)
-                    <tr>
-                        <td>{{ $document->file_name }}</td>
-                        <td>
-                            <!-- Lien pour télécharger le fichier -->
-                            <a href="{{ asset('storage/' . $document->file_path) }}" target="_blank"
-                                class="btn btn-outline-info">
-                                <i class="bx bx-download"></i> Télécharger
-                            </a>
-                        </td>
-                        <td>
-                            @if ($document->member_type == 'permanent')
-                                <span class="text-dark">Membre permanant</span>
-                            @elseif ($document->member_type == 'non_permanent')
-                                <span class="text-success">>Membre non permanent</span>
-                            @elseif ($document->member_type == 'all_members')
-                                <span class="text-primary">Tous les membres</span>
-                            @else
-                                <span>{{ $document->member_type }}</span>
-                            @endif
-                        </td>
-
-                        <td>{{ $document->created_at->format('d/m/Y') }}</td>
-                        <td>
-                            <a href="{{ route('documents.edit', $document->id) }}">
-                                <button type="button" class="btn btn-outline-success">
-                                    <i class="bx bx-edit-alt me-1"></i>
-                                </button>
-                            </a>
-
-                            <!-- Bouton de suppression -->
-                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
-                                data-bs-target="#deleteModalDocument" data-document-id="{{ $document->id }}">
-                                <i class="bx bx-trash me-1"></i>
-                            </button>
-
-                            <!-- Modale de confirmation de suppression -->
-                            <!-- Modale de confirmation de suppression -->
-                            <div class="modal fade" id="deleteModalDocument" tabindex="-1"
-                                aria-labelledby="deleteModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="deleteModalLabel">Confirmation de suppression</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Êtes-vous sûr de vouloir supprimer ce document ?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Annuler</button>
-                                            <form id="deleteForm" method="POST" action="" style="display:inline-block;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger">Supprimer</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <div class="card-body">
-        <div class="row">
-            <div class="col-6">
-                <form action="{{ route('documents.non_archived') }}" method="get" class="d-flex justify-content-start">
-                    <div class="form-group position-relative">
-                        <select name="perPage" id="perPage" class="form-control custom-select"
-                            onchange="this.form.submit()">
-                            <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
-                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                            <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
-                            <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
-                        </select>
-                        <i class="fas fa-chevron-down position-absolute"
-                            style="top: 50%; right: 10px; transform: translateY(-50%); color: #adafb2; font-size: 0.9rem;"></i>
-                    </div>
+            <div class="modal-body text-center pt-0 px-5">
+                <i class="bx bx-error-circle text-danger mb-3" style="font-size: 4rem;"></i>
+                <h4 class="fw-bold mb-2">Confirmation</h4>
+                <p class="text-muted">Êtes-vous sûr de vouloir supprimer ce document ?</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="POST" action="" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm">Oui, supprimer</button>
                 </form>
-            </div>
-
-            <div class="col-6 text-end">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-end">
-                        <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('documents.non_archived', ['page' => 1, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevrons-left"></i>
-                            </a>
-                        </li>
-                        <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('documents.non_archived', ['page' => $page - 1, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevron-left"></i>
-                            </a>
-                        </li>
-                        @for ($i = 1; $i <= $totalPages; $i++)
-                            <li class="page-item {{ $i == $page ? 'active' : '' }}">
-                                <a class="page-link"
-                                    href="{{ route('documents.non_archived', ['page' => $i, 'perPage' => $perPage]) }}">{{ $i }}</a>
-                            </li>
-                        @endfor
-                        <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('documents.non_archived', ['page' => $page + 1, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevron-right"></i>
-                            </a>
-                        </li>
-                        <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
-                            <a class="page-link"
-                                href="{{ route('documents.non_archived', ['page' => $totalPages, 'perPage' => $perPage]) }}">
-                                <i class="tf-icon bx bx-chevrons-right"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteModalDocument = document.getElementById('deleteModalDocument');
+        deleteModalDocument.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var documentId = button.getAttribute('data-document-id');
+            var form = deleteModalDocument.querySelector('#deleteForm');
+            // Mettre à jour l'action du formulaire
+            form.action = '/documents/' + documentId;
+        })
+    });
+</script>
 @endsection

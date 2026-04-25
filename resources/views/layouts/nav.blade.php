@@ -63,6 +63,18 @@
                         </a>
                     </li>
 
+                    <li>
+                        <form action="{{ route('users.editConnectedUser') }}" method="GET" style="display: none;"
+                            id="profile-form">
+                            @csrf
+                        </form>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                            onclick="document.getElementById('profile-form').submit();">
+                            <i class="bx bxs-user-detail me-2"></i>
+                            <span class="align-middle">Profil</span>
+                        </a>
+                    </li>
+
                 </ul>
             </li>
             <!--/ User -->
