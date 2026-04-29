@@ -9,18 +9,13 @@
     <div class="col-md-12">
         <ul class="nav nav-pills flex-column flex-md-row mb-3">
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('users.edit.connected.user') }}"><i class="bx bx-user me-1"></i>
-                    Infos
-                    personnelles</a>
+                <a class="nav-link" href="{{ route('users.editConnectedUser') }}"><i class="bx bx-user me-1"></i> Infos personnelles</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="javascript:void(0);"><i class='bx bx-align-justify'></i>
-                    Infos professionnelles</a>
+                <a class="nav-link active" href="javascript:void(0);"><i class='bx bx-align-justify'></i> Infos professionnelles</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('users.connected.edit.biography') }}"><i
-                        class='bx bxs-book-content'></i>
-                    Biographie & Activités</a>
+                <a class="nav-link" href="{{ route('users.connected.edit.biography') }}"><i class='bx bxs-book-content'></i> Biographie & Activités</a>
             </li>
         </ul>
         <div class="card mb-4">

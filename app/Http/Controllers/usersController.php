@@ -66,17 +66,42 @@ class usersController extends Controller
         $perPage = request()->get('perPage', 10);
         $page = request()->get('page', 1);
 
-        $sort = request()->get('sort', 'name');
+        $sort = request()->get('sort', 'first_name');
+        if ($sort == 'name') $sort = 'first_name';
+        
         $order = request()->get('order', 'asc');
+        $search = request()->get('search');
 
-        $users = User::where('id', '!=', $userConnected->id)
-            ->orderBy($sort, $order)
+        $query = User::where('id', '!=', $userConnected ? $userConnected->id : 0);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'LIKE', "%{$search}%")
+                  ->orWhere('last_name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('phone', 'LIKE', "%{$search}%")
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                  ->orWhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$search}%"]);
+            });
+        }
+
+        $totalUsers = $query->count();
+        $totalPages = ceil($totalUsers / $perPage);
+
+        $users = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
 
-        $totalUsers = User::where('id', '!=', $userConnected->id)->count();
-        $totalPages = ceil($totalUsers / $perPage);
+        if (request()->ajax()) {
+            return response()->json([
+                'users' => $users,
+                'page' => $page,
+                'totalPages' => $totalPages,
+                'perPage' => $perPage,
+                'totalUsers' => $totalUsers
+            ]);
+        }
 
         return view('pages.users.index', compact('users', 'userConnected', 'page', 'totalPages', 'perPage'));
     }
@@ -87,17 +112,42 @@ class usersController extends Controller
         $perPage = request()->get('perPage', 10);
         $page = request()->get('page', 1);
 
-        $sort = request()->get('sort', 'name');
+        $sort = request()->get('sort', 'first_name');
+        if ($sort == 'name') $sort = 'first_name';
+        
         $order = request()->get('order', 'asc');
+        $search = request()->get('search');
 
-        $users = User::onlyTrashed()
-            ->orderBy($sort, $order)
+        $query = User::onlyTrashed();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'LIKE', "%{$search}%")
+                  ->orWhere('last_name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('phone', 'LIKE', "%{$search}%")
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                  ->orWhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$search}%"]);
+            });
+        }
+
+        $totalUsers = $query->count();
+        $totalPages = ceil($totalUsers / $perPage);
+
+        $users = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
 
-        $totalUsers = User::onlyTrashed()->count();
-        $totalPages = ceil($totalUsers / $perPage);
+        if (request()->ajax()) {
+            return response()->json([
+                'users' => $users,
+                'page' => $page,
+                'totalPages' => $totalPages,
+                'perPage' => $perPage,
+                'totalUsers' => $totalUsers
+            ]);
+        }
 
         return view('pages.users.archives', compact('users', 'userConnected', 'page', 'totalPages', 'perPage', 'sort', 'order'));
     }

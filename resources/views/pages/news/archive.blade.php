@@ -55,10 +55,23 @@
                             <td class="px-4 py-3">
                                 <span class="text-muted fw-medium">{{ $item->user->first_name }} {{ $item->user->last_name }}</span>
                             </td>
-                            <td class="px-4 py-3 text-end">
-                                <button type="button" class="btn btn-sm btn-icon btn-light border rounded-circle shadow-none text-success" data-bs-toggle="modal" data-bs-target="#restoreModalNews{{ $item->id }}" title="Restaurer l'actualité">
-                                    <i class="bx bx-undo"></i>
-                                </button>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-primary" 
+                                        title="Afficher les détails"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#detailsModal"
+                                        data-title="{{ $item->title }}"
+                                        data-content="{{ $item->content }}"
+                                        data-date="{{ $item->created_at->format('d/m/Y') }}"
+                                        data-author="{{ $item->user->first_name }} {{ $item->user->last_name }}"
+                                        data-type="Actualité"
+                                        data-image="{{ $item->image ? asset('storage/' . $item->image) : '' }}">
+                                        <i class="bx bx-show"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-icon btn-light border rounded-circle shadow-none text-success" data-bs-toggle="modal" data-bs-target="#restoreModalNews{{ $item->id }}" title="Restaurer l'actualité">
+                                        <i class="bx bx-undo"></i>
+                                    </button>
+                                </div>
 
                                 <!-- Restore Modal -->
                                 <div class="modal fade" id="restoreModalNews{{ $item->id }}" tabindex="-1" aria-hidden="true">
@@ -131,10 +144,23 @@
                             <td class="px-4 py-3">
                                 <span class="text-muted fw-medium">{{ $item->user->first_name }} {{ $item->user->last_name }}</span>
                             </td>
-                            <td class="px-4 py-3 text-end">
-                                <button type="button" class="btn btn-sm btn-icon btn-light border rounded-circle shadow-none text-success" data-bs-toggle="modal" data-bs-target="#restoreModalEvent{{ $item->id }}" title="Restaurer l'événement">
-                                    <i class="bx bx-undo"></i>
-                                </button>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-primary" 
+                                        title="Afficher les détails"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#detailsModal"
+                                        data-title="{{ $item->title }}"
+                                        data-content="{{ $item->content }}"
+                                        data-date="{{ date('d/m/Y - H:i', strtotime($item->date)) }}"
+                                        data-author="{{ $item->user->first_name }} {{ $item->user->last_name }}"
+                                        data-type="Événement"
+                                        data-image="{{ $item->image ? asset('storage/' . $item->image) : '' }}">
+                                        <i class="bx bx-show"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-icon btn-light border rounded-circle shadow-none text-success" data-bs-toggle="modal" data-bs-target="#restoreModalEvent{{ $item->id }}" title="Restaurer l'événement">
+                                        <i class="bx bx-undo"></i>
+                                    </button>
+                                </div>
                                 
                                 <!-- Restore Modal Event -->
                                 <div class="modal fade" id="restoreModalEvent{{ $item->id }}" tabindex="-1" aria-hidden="true">
@@ -172,4 +198,94 @@
         </div>
     </div>
 </div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom border-light px-4 py-3">
+                <div class="d-flex align-items-center">
+                    <div id="modalTypeBadge" class="badge rounded-pill me-3"></div>
+                    <h5 class="modal-title fw-bold text-dark" id="modalTitle"></h5>
+                </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row">
+                    <div class="col-md-5 mb-4 mb-md-0" id="modalImageContainer">
+                        <img id="modalImage" src="" class="img-fluid rounded-4 shadow-sm w-100 object-fit-cover" style="max-height: 300px;" alt="Publication image">
+                    </div>
+                    <div class="col-md-7" id="modalInfoContainer">
+                        <div class="d-flex flex-wrap gap-3 mb-4">
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="bx bx-calendar me-1 fs-5"></i>
+                                <span id="modalDate"></span>
+                            </div>
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="bx bx-user me-1 fs-5"></i>
+                                <span id="modalAuthor"></span>
+                            </div>
+                        </div>
+                        <div class="publication-content text-secondary" id="modalContent" style="white-space: pre-wrap; line-height: 1.6;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const detailsModal = document.getElementById('detailsModal');
+    if (detailsModal) {
+        detailsModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            
+            const title = button.getAttribute('data-title');
+            const content = button.getAttribute('data-content');
+            const date = button.getAttribute('data-date');
+            const author = button.getAttribute('data-author');
+            const type = button.getAttribute('data-type');
+            const image = button.getAttribute('data-image');
+
+            const modalTitle = detailsModal.querySelector('#modalTitle');
+            const modalTypeBadge = detailsModal.querySelector('#modalTypeBadge');
+            const modalDate = detailsModal.querySelector('#modalDate');
+            const modalAuthor = detailsModal.querySelector('#modalAuthor');
+            const modalContent = detailsModal.querySelector('#modalContent');
+            const modalImage = detailsModal.querySelector('#modalImage');
+            const modalImageContainer = detailsModal.querySelector('#modalImageContainer');
+            const modalInfoContainer = detailsModal.querySelector('#modalInfoContainer');
+
+            modalTitle.textContent = title;
+            modalDate.textContent = date;
+            modalAuthor.textContent = author;
+            modalContent.textContent = content;
+            modalTypeBadge.textContent = type;
+            
+            if (type === 'Événement') {
+                modalTypeBadge.className = 'badge bg-label-success rounded-pill me-3';
+            } else {
+                modalTypeBadge.className = 'badge bg-label-primary rounded-pill me-3';
+            }
+
+            if (image) {
+                modalImage.src = image;
+                modalImageContainer.style.display = 'block';
+                modalInfoContainer.className = 'col-md-7';
+            } else {
+                modalImageContainer.style.display = 'none';
+                modalInfoContainer.className = 'col-md-12';
+            }
+        });
+    }
+});
+</script>
 @endsection

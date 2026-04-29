@@ -14,8 +14,12 @@
         <ul class="navbar-nav flex-row align-items-center ms-auto">
             <!-- Place this tag where you want the button to render. -->
             <li class="nav-item lh-1 me-3">
-                <span class="d-block">{{ $userConnected->first_name }}
-                    {{ $userConnected->last_name }}</span>
+                @if(isset($userConnected) && $userConnected)
+                    <span class="d-block">{{ $userConnected->first_name }}
+                        {{ $userConnected->last_name }}</span>
+                @else
+                    <span class="d-block">Utilisateur</span>
+                @endif
             </li>
 
             <!-- User -->
@@ -39,9 +43,14 @@
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <span class="d-block">{{ $userConnected->first_name }}
-                                        {{ $userConnected->last_name }}</span>
-                                    <small class="text-muted">{{ $userConnected->role }}</small>
+                                    @if(isset($userConnected) && $userConnected)
+                                        <span class="d-block">{{ $userConnected->first_name }}
+                                            {{ $userConnected->last_name }}</span>
+                                        <small class="text-muted">{{ $userConnected->role }}</small>
+                                    @else
+                                        <span class="d-block">Utilisateur</span>
+                                        <small class="text-muted">Profil</small>
+                                    @endif
                                 </div>
                             </div>
                         </a>
@@ -51,18 +60,6 @@
                         <div class="dropdown-divider"></div>
                     </li>
                  
-
-                    <li>
-                        <form action="{{ route('logout') }}" method="POST" style="display: none;" id="logout-form">
-                            @csrf
-                        </form>
-                        <a class="dropdown-item" href="javascript:void(0);"
-                            onclick="document.getElementById('logout-form').submit();">
-                            <i class="bx bx-power-off me-2"></i>
-                            <span class="align-middle">Déconnexion</span>
-                        </a>
-                    </li>
-
                     <li>
                         <form action="{{ route('users.editConnectedUser') }}" method="GET" style="display: none;"
                             id="profile-form">
@@ -72,6 +69,17 @@
                             onclick="document.getElementById('profile-form').submit();">
                             <i class="bx bxs-user-detail me-2"></i>
                             <span class="align-middle">Profil</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <form action="{{ route('logout') }}" method="POST" style="display: none;" id="logout-form">
+                            @csrf
+                        </form>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                            onclick="document.getElementById('logout-form').submit();">
+                            <i class="bx bx-power-off me-2"></i>
+                            <span class="align-middle">Déconnexion</span>
                         </a>
                     </li>
 
