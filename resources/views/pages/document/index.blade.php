@@ -25,10 +25,11 @@
         <!-- Search Bar -->
         <div class="card-header bg-white border-bottom border-light py-3 px-4 d-flex justify-content-between align-items-center">
             <h6 class="mb-0 text-muted fw-semibold">Documents disponibles</h6>
-            <div class="input-container w-auto">
+            <form action="{{ route('documents.non_archived') }}" method="GET" class="input-container w-auto m-0" id="searchForm">
                 <i class="bx bx-search text-muted fs-5 ps-2"></i>
-                <input type="text" id="searchInput" placeholder="Rechercher un document..." value="{{ request('search') }}" class="w-100" />
-            </div>
+                <input type="hidden" name="perPage" value="{{ $perPage }}">
+                <input type="text" name="search" id="searchInput" placeholder="Rechercher un document..." value="{{ request('search') }}" class="w-100 border-0 bg-transparent outline-0 shadow-none" style="outline: none;" />
+            </form>
         </div>
 
         <!-- Table -->
@@ -54,10 +55,11 @@
                                 <i class="bx bx-sort @if(request('sort') == 'created_at' && request('order') == 'asc') bx-sort-alt @elseif(request('sort') == 'created_at' && request('order') == 'desc') bx-sort-alt-up @endif"></i>
                             </a>
                         </th>
+                        <th class="border-0 px-4 py-3 text-muted fw-semibold">Ajouté par</th>
                         <th class="border-0 px-4 py-3 text-end">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="border-top-0">
+                <tbody class="border-top-0" id="document-table-body">
                     @forelse($documents as $document)
                         <tr>
                             <td class="px-4 py-3">
@@ -88,6 +90,18 @@
                                 <i class="bx bx-calendar-event me-1 text-muted"></i>
                                 {{ collect(explode(' ', $document->created_at->format('d/m/Y')))->first() }}
                             </td>
+                            <td class="px-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-xs me-2">
+                                        <div class="rounded-circle bg-label-secondary d-flex align-items-center justify-content-center text-secondary fw-bold" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                            {{ $document->user ? strtoupper(substr($document->user->first_name, 0, 1)) : '?' }}
+                                        </div>
+                                    </div>
+                                    <span class="text-muted small fw-medium">
+                                        {{ $document->user ? $document->user->first_name . ' ' . $document->user->last_name : 'Inconnu' }}
+                                    </span>
+                                </div>
+                            </td>
                             <td class="px-4 py-3 text-end">
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{{ asset('storage/' . $document->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm d-flex align-items-center gap-1 hover-lift">
@@ -106,7 +120,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center py-5">
+                            <td colspan="5" class="text-center py-5">
                                 <div class="mb-3">
                                     <i class="bx bx-folder-open text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
                                 </div>
@@ -124,7 +138,7 @@
             <div class="d-flex align-items-center text-muted text-sm">
                 <span>Afficher</span>
                 <form action="{{ route('documents.non_archived') }}" method="get" class="mx-2">
-                    <select name="perPage" class="form-select form-select-sm shadow-none border-light rounded-pill px-3" onchange="this.form.submit()">
+                    <select name="perPage" id="perPageSelect" class="form-select form-select-sm shadow-none border-light rounded-pill px-3">
                         <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
                         <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
                         <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
@@ -134,7 +148,7 @@
                 <span>par page</span>
             </div>
 
-            <nav aria-label="Page navigation">
+            <nav aria-label="Page navigation" id="pagination-container">
                 <ul class="pagination pagination-sm justify-content-end mb-0 gap-1">
                     <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
                         <a class="page-link rounded-circle" href="{{ route('documents.non_archived', ['page' => 1, 'perPage' => $perPage]) }}"><i class="bx bx-chevrons-left"></i></a>
@@ -194,5 +208,204 @@
             form.action = '/documents/' + documentId;
         })
     });
+</script>
+
+<script>
+$(document).ready(function() {
+    let timeout = null;
+    let currentRequest = null;
+
+    function fetchDocuments(url = null, isInitialSearch = false) {
+        const search = $('#searchInput').val();
+        const perPage = $('#perPageSelect').val() || 10;
+        
+        let baseUrl = url || "{{ route('documents.non_archived') }}";
+        
+        let [path, queryString] = baseUrl.split('?');
+        let params = new URLSearchParams(queryString || "");
+        
+        params.set('search', search);
+        params.set('perPage', perPage);
+        
+        const finalUrl = path + '?' + params.toString();
+
+        if (currentRequest) {
+            currentRequest.abort();
+        }
+
+        // On ne met plus d'opacité 0.5 pour garder la fluidité
+        currentRequest = $.ajax({
+            url: finalUrl,
+            type: 'GET',
+            dataType: 'json',
+            cache: false,
+            success: function(response) {
+                updateTable(response.documents, response.isAdmin);
+                updatePagination(response);
+                currentRequest = null;
+            },
+            error: function(xhr, status, error) {
+                if (status !== 'abort') {
+                    console.error("Erreur AJAX:", error);
+                }
+            }
+        });
+    }
+
+    function updateTable(documents, isAdmin) {
+        const tbody = $('#document-table-body');
+        tbody.empty();
+
+        if (documents.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="bx bx-folder-open text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                        </div>
+                        <h6 class="text-muted fw-medium mb-1">Aucun document trouvé</h6>
+                        <p class="text-muted small">Essayez de modifier votre recherche.</p>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        documents.forEach(doc => {
+            const dateStr = new Date(doc.created_at).toLocaleDateString('fr-FR');
+            const author = doc.user ? `${doc.user.first_name} ${doc.user.last_name}` : 'Inconnu';
+            const initials = doc.user ? doc.user.first_name.charAt(0).toUpperCase() : '?';
+            const badge = getBadge(doc.member_type);
+
+            let actionsHtml = `
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/storage/${doc.file_path}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm d-flex align-items-center gap-1">
+                        <i class="bx bx-download"></i>
+                    </a>
+            `;
+
+            if (isAdmin) {
+                actionsHtml += `
+                    <a href="/documents/${doc.id}/edit" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-info">
+                        <i class="bx bx-edit-alt"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-danger" data-bs-toggle="modal" data-bs-target="#deleteModalDocument" data-document-id="${doc.id}">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                `;
+            }
+            actionsHtml += `</div>`;
+
+            tbody.append(`
+                <tr>
+                    <td class="px-4 py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-md me-3 text-primary bg-label-primary rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bx bxs-file-pdf fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold text-dark">${doc.file_name}</h6>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">${badge}</td>
+                    <td class="px-4 py-3 text-muted">${dateStr}</td>
+                    <td class="px-4 py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-xs me-2">
+                                <div class="rounded-circle bg-label-secondary d-flex align-items-center justify-content-center text-secondary fw-bold" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                    ${initials}
+                                </div>
+                            </div>
+                            <span class="text-muted small fw-medium">${author}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-end">${actionsHtml}</td>
+                </tr>
+            `);
+        });
+    }
+
+    function getBadge(type) {
+        if (type === 'permanent') return '<span class="badge bg-label-info rounded-pill px-3 py-2 fw-semibold">GDI</span>';
+        if (type === 'non_permanent') return '<span class="badge bg-label-success rounded-pill px-3 py-2 fw-semibold">Non permanent</span>';
+        if (type === 'all_members') return '<span class="badge bg-label-primary rounded-pill px-3 py-2 fw-semibold">Tous les membres</span>';
+        return `<span class="badge bg-label-secondary rounded-pill px-3 py-2 fw-semibold text-capitalize">${type}</span>`;
+    }
+
+    function updatePagination(data) {
+        const ul = $('#pagination-container ul');
+        if (!ul.length) return;
+        ul.empty();
+
+        ul.append(`
+            <li class="page-item ${data.page == 1 ? 'disabled' : ''}">
+                <a class="page-link rounded-circle ajax-page" href="#" data-page="${data.page - 1}"><i class="bx bx-chevron-left"></i></a>
+            </li>
+        `);
+
+        for (let i = 1; i <= data.totalPages; i++) {
+            const activeClass = i == data.page ? 'active' : '';
+            const linkClass = i == data.page ? 'bg-primary border-primary text-white shadow-sm' : '';
+            ul.append(`
+                <li class="page-item ${activeClass}">
+                    <a class="page-link rounded-circle ajax-page ${linkClass}" href="#" data-page="${i}">${i}</a>
+                </li>
+            `);
+        }
+
+        ul.append(`
+            <li class="page-item ${data.page == data.totalPages ? 'disabled' : ''}">
+                <a class="page-link rounded-circle ajax-page" href="#" data-page="${data.page + 1}"><i class="bx bx-chevron-right"></i></a>
+            </li>
+        `);
+    }
+
+    // --- Event Listeners ---
+
+    $('#searchInput').on('input', function() {
+        const query = $(this).val().toLowerCase();
+        
+        // 1. Filtrage local immédiat (Sensation de "dynamique")
+        const rows = $('#document-table-body tr');
+        let visibleCount = 0;
+        
+        rows.each(function() {
+            const fileName = $(this).find('h6').text().toLowerCase();
+            const author = $(this).find('span.text-muted.small').text().toLowerCase();
+            
+            if (fileName.includes(query) || author.includes(query)) {
+                $(this).show();
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+
+        // 2. Synchronisation AJAX en arrière-plan (Pour la pagination)
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            fetchDocuments();
+        }, 300);
+    });
+
+    $(document).on('click', '.ajax-page', function(e) {
+        e.preventDefault();
+        const page = $(this).data('page');
+        if (page && page > 0) {
+            const baseUrl = "{{ route('documents.non_archived') }}";
+            fetchDocuments(`${baseUrl}?page=${page}`);
+        }
+    });
+
+    $('#perPageSelect').on('change', function() {
+        fetchDocuments();
+    });
+
+    $('#searchForm').on('submit', function(e) {
+        e.preventDefault();
+        fetchDocuments();
+    });
+});
 </script>
 @endsection

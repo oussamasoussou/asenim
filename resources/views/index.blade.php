@@ -45,7 +45,30 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent">
-                    <a href="#">Voir l'article</a>
+                    <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#newsModal{{ $item->id }}" class="text-decoration-none fw-bold text-primary">Voir l'article</a>
+                </div>
+            </div>
+
+            <!-- Modal Voir l'article -->
+            <div class="modal fade" id="newsModal{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                    <div class="modal-content rounded-4 border-0 shadow-lg">
+                        <div class="modal-header border-bottom border-light pb-3">
+                            <h5 class="modal-title fw-bold text-dark">{{ $item->title }}</h5>
+                            <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body pt-4">
+                            @if($item->image)
+                                <div class="text-center mb-4">
+                                    <img src="{{ asset('storage/' . $item->image) }}" class="img-fluid rounded shadow-sm" alt="{{ $item->title }}" style="max-height: 400px; object-fit: contain;">
+                                </div>
+                            @endif
+                            <div class="text-dark" style="white-space: pre-wrap; line-height: 1.6; font-size: 1rem;">{!! nl2br(e($item->content)) !!}</div>
+                        </div>
+                        <div class="modal-footer border-top border-light pt-3">
+                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         @empty

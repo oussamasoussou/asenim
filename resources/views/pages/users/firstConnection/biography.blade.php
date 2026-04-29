@@ -25,9 +25,8 @@
         </ul>
         <div class="card mb-4">
             <h5 class="card-header">Profile Details</h5>
-            <form method="POST" action="{{ route('user.edit.biography.membre.first') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('user.update.biography.membre.first') }}" enctype="multipart/form-data">
                 @csrf
-                @method('PUT')
 
                 <hr class="my-0" />
                 <div class="card-body">

@@ -33,24 +33,56 @@ class DocumentController extends Controller
         $page = request()->get('page', 1);        // Page actuelle
         $sort = request()->get('sort', 'file_name');  // Colonne de tri
         $order = request()->get('order', 'asc'); // Ordre de tri
+        $search = request()->get('search');
     
+        // Vérification de l'utilisateur connecté
+        $userConnected = Auth::user();
+        if (!$userConnected) {
+            if (request()->ajax()) {
+                return response()->json(['error' => 'Unauthenticated'], 401);
+            }
+            return redirect()->route('login');
+        }
+
         // Vérification du rôle de l'utilisateur
-        $query = Documents::whereNull('deleted_at');
+        $query = Documents::with('user')->whereNull('deleted_at');
     
         if (!$userConnected->isAdmin()) { // Si ce n'est pas un admin, filtrer par user_id
             $query->where('user_id', $userConnected->id);
         }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('file_name', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', function ($qu) use ($search) {
+                      $qu->where('first_name', 'LIKE', "%{$search}%")
+                         ->orWhere('last_name', 'LIKE', "%{$search}%")
+                         ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+                  });
+            });
+        }
     
+        // Calcul des totaux pour la pagination
+        $totalDocuments = $query->count();
+        $totalPages = ceil($totalDocuments / $perPage);
+
         // Appliquer tri et pagination
         $documents = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
     
-        // Calcul des totaux pour la pagination
-        $totalDocuments = $query->count();
-        $totalPages = ceil($totalDocuments / $perPage);
-    
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'documents' => $documents,
+                'page' => (int)$page,
+                'totalPages' => (int)$totalPages,
+                'perPage' => (int)$perPage,
+                'totalDocuments' => (int)$totalDocuments,
+                'isAdmin' => $userConnected->isAdmin()
+            ]);
+        }
+
         return view('pages.document.index', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage'));
     }
     
@@ -65,12 +97,33 @@ class DocumentController extends Controller
         $page = request()->get('page', 1);        // Page actuelle
         $sort = request()->get('sort', 'file_name');  // Colonne de tri
         $order = request()->get('order', 'asc'); // Ordre de tri
+        $search = request()->get('search');
     
+        // Vérification de l'utilisateur connecté
+        $userConnected = Auth::user();
+        if (!$userConnected) {
+            if (request()->ajax()) {
+                return response()->json(['error' => 'Unauthenticated'], 401);
+            }
+            return redirect()->route('login');
+        }
+
         // Vérification du rôle de l'utilisateur
-        $query = Documents::onlyTrashed();
+        $query = Documents::with('user')->onlyTrashed();
     
         if (!$userConnected->isAdmin()) { // Si ce n'est pas un admin, filtrer par user_id
             $query->where('user_id', $userConnected->id);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('file_name', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', function ($qu) use ($search) {
+                      $qu->where('first_name', 'LIKE', "%{$search}%")
+                         ->orWhere('last_name', 'LIKE', "%{$search}%")
+                         ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+                  });
+            });
         }
     
         // Appliquer tri et pagination
@@ -83,6 +136,17 @@ class DocumentController extends Controller
         $totalDocuments = $query->count();
         $totalPages = ceil($totalDocuments / $perPage);
     
+        if (request()->ajax()) {
+            return response()->json([
+                'documents' => $documents,
+                'page' => $page,
+                'totalPages' => $totalPages,
+                'perPage' => $perPage,
+                'totalDocuments' => $totalDocuments,
+                'isAdmin' => $userConnected->isAdmin()
+            ]);
+        }
+
         return view('pages.document.archive', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage'));
     }
     

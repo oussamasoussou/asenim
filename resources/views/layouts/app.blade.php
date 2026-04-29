@@ -612,16 +612,18 @@
             const deleteModal = document.getElementById('deleteModalDocument');
             const deleteForm = document.getElementById('deleteForm');
 
-            deleteModal.addEventListener('show.bs.modal', (event) => {
-                // Bouton qui déclenche la modale
-                const button = event.relatedTarget;
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', (event) => {
+                    // Bouton qui déclenche la modale
+                    const button = event.relatedTarget;
 
-                // Récupérer l'ID du document depuis l'attribut data-document-id
-                const documentId = button.getAttribute('data-document-id');
+                    // Récupérer l'ID du document depuis l'attribut data-document-id
+                    const documentId = button.getAttribute('data-document-id');
 
-                // Mettre à jour l'action du formulaire avec l'ID du document
-                deleteForm.action = `/documents/delete/${documentId}`;
-            });
+                    // Mettre à jour l'action du formulaire avec l'ID du document
+                    deleteForm.action = `/documents/delete/${documentId}`;
+                });
+            }
         });
 
     </script>
@@ -652,12 +654,14 @@
             const deleteModal = document.getElementById('deleteModalNews');
             const deleteForm = document.getElementById('deleteForm');
 
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget; // Bouton qui déclenche le modal
-                const newsId = button.getAttribute('data-news-id'); // Récupération de l'ID
-                const actionUrl = "{{ url('news') }}/" + newsId; // Construction de l'URL d'action
-                deleteForm.setAttribute('action', actionUrl); // Mise à jour de l'action du formulaire
-            });
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget; // Bouton qui déclenche le modal
+                    const newsId = button.getAttribute('data-news-id'); // Récupération de l'ID
+                    const actionUrl = "{{ url('news') }}/" + newsId; // Construction de l'URL d'action
+                    deleteForm.setAttribute('action', actionUrl); // Mise à jour de l'action du formulaire
+                });
+            }
         });
     </script>
 
@@ -681,6 +685,8 @@
         });
 
     </script>
+
+    
 
     @yield('scripts')
 
