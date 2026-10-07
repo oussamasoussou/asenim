@@ -639,8 +639,52 @@ class usersController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
-            return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de  restore de l\'utilisateur. Veuillez réessayer.');
+            return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors du restore de l\'utilisateur. Veuillez réessayer.');
         }
+    }
+
+    public function resetPassword($id)
+    {
+        try {
+            if (Auth::user()->role !== 'admin') {
+                return redirect()->route('users.index')->with('error', 'Action non autorisée.');
+            }
+            $user = User::findOrFail($id);
+            $user->password = Hash::make('123456789');
+            $user->save();
+            return redirect()->route('users.index')->with('success', 'Mot de passe réinitialisé à "123456789" avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
+        }
+    }
+
+    public function editSecurity()
+    {
+        $userConnected = Auth::user();
+        return view('pages.users.security', compact('userConnected'));
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'current_password.required' => 'Le mot de passe actuel est requis.',
+            'new_password.required' => 'Le nouveau mot de passe est requis.',
+            'new_password.min' => 'Le nouveau mot de passe doit faire au moins :min caractères.',
+            'new_password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+        ]);
+
+        $user = User::find(Auth::id());
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', 'Mot de passe mis à jour avec succès.');
     }
 
 }

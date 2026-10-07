@@ -57,6 +57,7 @@ Route::middleware(['isAdmin'])->group(function () {
 
 
     Route::put('users/connected', [UsersController::class, 'updateUserConnected'])->name('users.connected');
+    Route::post('/users/{id}/reset-password', [UsersController::class, 'resetPassword'])->name('users.reset_password');
     Route::delete('users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
     Route::get('/user/editConnectedUser', [UsersController::class, 'editConnectedUser'])->name(name: 'users.editConnectedUser');
     Route::get('admin/user-connected', [AuthController::class, 'userConnected'])->name('user.connected');
@@ -80,6 +81,8 @@ Route::get('/users/editConnectedUser/biography', [UsersController::class, 'editC
 Route::put('users', [UsersController::class, 'updateUserConnected'])->name('users.connected.update');
 Route::put('users/professionnelle', [UsersController::class, 'updateUserProfessionnelle'])->name('users.connected.update.professionnelle');
 Route::put('users/biography', [UsersController::class, 'updateUserBiography'])->name('users.connected.update.biography');
+Route::get('users/security', [UsersController::class, 'editSecurity'])->name('users.edit.security');
+Route::put('users/update-password', [UsersController::class, 'updatePassword'])->name('users.update.password');
 
 
 

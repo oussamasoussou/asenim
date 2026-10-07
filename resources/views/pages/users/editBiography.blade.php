@@ -22,6 +22,10 @@
                 <a class="nav-link" href="javascript:void(0);"><i class='bx bxs-book-content'></i>
                     Biographie & Activités</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('users.edit.security') }}"><i class='bx bx-lock-alt'></i>
+                    Sécurité</a>
+            </li>
         </ul>
         <div class="card mb-4">
             <h5 class="card-header">Profile Details</h5>

@@ -90,6 +90,9 @@
                             </td>
                             <td class="px-4 py-3 text-end">
                                 <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-user-id="{{ $user->id }}" title="Réinitialiser le mot de passe">
+                                        <i class="bx bx-key"></i>
+                                    </button>
                                     <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-primary" title="Modifier">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
@@ -144,6 +147,29 @@
                     </li>
                 </ul>
             </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pt-0 px-5">
+                <i class="bx bx-key text-warning mb-3" style="font-size: 4rem;"></i>
+                <h4 class="fw-bold mb-2">Réinitialiser</h4>
+                <p class="text-muted">Réinitialiser le mot de passe de cet utilisateur par défaut (<strong>123456789</strong>) ?</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                <form id="resetPasswordForm" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 shadow-sm text-white">Oui, réinitialiser</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -253,6 +279,9 @@ $(document).ready(function() {
                     <td class="px-4 py-3">${roleBadge}</td>
                     <td class="px-4 py-3 text-end">
                         <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-user-id="${user.id}" title="Réinitialiser le mot de passe">
+                                <i class="bx bx-key"></i>
+                            </button>
                             <a href="/users/${user.id}/edit" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none text-primary" title="Modifier">
                                 <i class="bx bx-edit-alt"></i>
                             </a>
@@ -328,6 +357,22 @@ $(document).ready(function() {
     $('.input-container').on('submit', function(e) {
         e.preventDefault();
         fetchUsers();
+    });
+
+    // Reset Password Modal Setup
+    $('#resetPasswordModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget);
+        const userId = button.data('user-id');
+        const form = $('#resetPasswordForm');
+        form.attr('action', `/users/${userId}/reset-password`);
+    });
+
+    // Delete Modal Setup
+    $('#deleteModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget);
+        const userId = button.data('user-id');
+        const form = $('#deleteForm');
+        form.attr('action', `/users/${userId}`);
     });
 });
 </script>
