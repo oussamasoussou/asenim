@@ -18,6 +18,9 @@
     </div>
 
     <div class="d-flex align-items-center gap-2 ms-auto">
+        <a href="{{ route('front.home') }}" class="btn btn-ghost btn-sm d-none d-md-inline-flex" target="_blank" rel="noopener" title="Ouvrir le site public dans un nouvel onglet">
+            <i class="bx bx-globe"></i>Voir le site
+        </a>
         <a href="{{ route('chat.index') }}" class="topbar-icon-btn" aria-label="Messagerie" title="Messagerie">
             <i class="bx bx-chat"></i>
         </a>

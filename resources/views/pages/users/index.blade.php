@@ -9,10 +9,7 @@
 
     <div class="card table-card">
         <div class="card-header">
-            <nav class="segment-switch" aria-label="Filtrer les utilisateurs">
-                <a href="{{ route('users.index') }}" class="active" aria-current="page"><i class="bx bx-user-check"></i>Actifs</a>
-                <a href="{{ route('users.archives') }}"><i class="bx bx-archive"></i>Archivés</a>
-            </nav>
+            @include('pages.users.partials.segment', ['active' => 'active'])
             <form action="{{ route('users.index') }}" method="GET" role="search" data-live-search data-target="#users-list" class="search-field">
                 <i class="bx bx-search" aria-hidden="true"></i>
                 <label for="search" class="sr-only">Rechercher un utilisateur</label>

@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BoardMemberController;
 use App\Http\Controllers\ChatGroupeController;
 use App\Http\Controllers\CompanyInfoController;
+use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\FrontController;
+use App\Http\Controllers\RegistrationRequestController;
 use App\Http\Controllers\Documents\DocumentController;
 use App\Http\Controllers\News\NewsController;
 use App\Http\Controllers\usersController;
@@ -21,9 +25,21 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 |
 */
 
-Route::get('/', function () {
-    return redirect()->route(auth()->check() ? 'index' : 'login');
+// ----------------------------- Site public ASENIM
+Route::name('front.')->group(function () {
+    Route::get('/', [FrontController::class, 'home'])->name('home');
+    Route::get('qui-sommes-nous', [FrontController::class, 'about'])->name('about');
+    Route::get('bureau-executif', [FrontController::class, 'bureau'])->name('bureau');
+    Route::get('actualites', [FrontController::class, 'news'])->name('news');
+    Route::get('actualites/{id}', [FrontController::class, 'showNews'])->whereNumber('id')->name('news.show');
+    Route::get('galerie', [FrontController::class, 'gallery'])->name('gallery');
+    Route::get('icmic', [FrontController::class, 'icmic'])->name('icmic');
+    Route::get('contact', [FrontController::class, 'contact'])->name('contact');
+    Route::post('contact', [FrontController::class, 'sendContact'])->middleware('throttle:5,1')->name('contact.send');
+    Route::get('inscription', [FrontController::class, 'register'])->name('register');
+    Route::post('inscription', [FrontController::class, 'storeRegistration'])->middleware(['guest', 'throttle:5,1'])->name('register.store');
 });
+Route::redirect('espace-membre', '/index');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -63,6 +79,27 @@ Route::middleware('auth')->group(function () {
         // Coordonnées de l'entreprise
         Route::get('admin/coordonnees', [CompanyInfoController::class, 'edit'])->name('company.edit');
         Route::put('admin/coordonnees', [CompanyInfoController::class, 'update'])->name('company.update');
+
+        // Demandes d'inscription venant du site public
+        Route::get('list-users-pending', [RegistrationRequestController::class, 'index'])->name('users.pending');
+        Route::post('users/{id}/approve', [RegistrationRequestController::class, 'approve'])->whereNumber('id')->name('users.approve');
+        Route::delete('users/{id}/reject', [RegistrationRequestController::class, 'reject'])->whereNumber('id')->name('users.reject');
+
+        // Bureau exécutif affiché sur le site public
+        Route::get('admin/bureau', [BoardMemberController::class, 'index'])->name('board.index');
+        Route::get('admin/bureau/create', [BoardMemberController::class, 'create'])->name('board.create');
+        Route::post('admin/bureau', [BoardMemberController::class, 'store'])->name('board.store');
+        Route::get('admin/bureau/{id}/edit', [BoardMemberController::class, 'edit'])->whereNumber('id')->name('board.edit');
+        Route::put('admin/bureau/{id}', [BoardMemberController::class, 'update'])->whereNumber('id')->name('board.update');
+        Route::delete('admin/bureau/{id}', [BoardMemberController::class, 'destroy'])->whereNumber('id')->name('board.destroy');
+        Route::post('admin/bureau/{id}/toggle', [BoardMemberController::class, 'toggle'])->whereNumber('id')->name('board.toggle');
+        Route::post('admin/bureau/{id}/move/{direction}', [BoardMemberController::class, 'move'])->whereNumber('id')->whereIn('direction', ['up', 'down'])->name('board.move');
+
+        // Messages du formulaire de contact du site public
+        Route::get('admin/messages', [ContactMessageController::class, 'index'])->name('messages.index');
+        Route::get('admin/messages/{id}', [ContactMessageController::class, 'show'])->whereNumber('id')->name('messages.show');
+        Route::post('admin/messages/{id}/unread', [ContactMessageController::class, 'markUnread'])->whereNumber('id')->name('messages.unread');
+        Route::delete('admin/messages/{id}', [ContactMessageController::class, 'destroy'])->whereNumber('id')->name('messages.destroy');
     });
 
     // ----------------------------- Profil de l'utilisateur connecté (admin ou membre)

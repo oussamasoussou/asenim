@@ -19,5 +19,5 @@
     @if ($item->image)
         <img src="{{ asset('storage/' . $item->image) }}" alt="" class="article-cover">
     @endif
-    <div class="article-body">{{ $item->content }}</div>
+    <div class="article-body rich-content">{!! \App\Support\RichText::render($item->content) !!}</div>
 </template>

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Notifications\CustomResetPasswordNotification;
+use App\Support\RichText;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -41,7 +42,8 @@ class User extends Authenticatable
         'function',
         'biography',
         'activities',
-        'level'
+        'level',
+        'approved_at',
     ];
 
     /**
@@ -61,8 +63,22 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
+
+    /**
+     * Biographie et activités : texte riche (barre d'outils) nettoyé à l'enregistrement.
+     */
+    public function setBiographyAttribute($value): void
+    {
+        $this->attributes['biography'] = RichText::sanitize($value);
+    }
+
+    public function setActivitiesAttribute($value): void
+    {
+        $this->attributes['activities'] = RichText::sanitize($value);
+    }
 
     public function isAdmin()
     {
@@ -72,6 +88,35 @@ class User extends Authenticatable
     public function isMembre()
     {
         return $this->role === self::ROLES['MEMBRE'];
+    }
+
+    protected static function booted(): void
+    {
+        // Un compte est validé par défaut (création par un admin, seeder, import…).
+        // Seules les inscriptions du site public passent explicitement approved_at = null.
+        static::creating(function (User $user) {
+            if (!array_key_exists('approved_at', $user->getAttributes())) {
+                $user->approved_at = now();
+            }
+        });
+    }
+
+    /**
+     * Compte validé par un administrateur (les inscriptions du site public sont en attente).
+     */
+    public function isApproved(): bool
+    {
+        return $this->approved_at !== null;
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->whereNotNull('approved_at');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->whereNull('approved_at');
     }
 
     public function sendPasswordResetNotification($token)

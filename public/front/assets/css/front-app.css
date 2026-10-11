@@ -1,0 +1,66 @@
+/* =========================================================
+   ASENIM — compléments liés à l'intégration Laravel
+   (états d'envoi des formulaires, listes dynamiques)
+   ========================================================= */
+
+/* Barre de navigation mobile : réserve la place en bas d'écran */
+@media (max-width: 767.98px) {
+  body { padding-bottom: 82px; }
+  body.mobile-menu-open { overflow: hidden; }
+}
+
+/* Bouton « espace membre » quand l'utilisateur est connecté */
+.user-btn--auth { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.user-btn--auth::after {
+  content: ''; position: absolute; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent-color, #65a74a); border: 2px solid #fff; transform: translate(10px, 10px);
+}
+
+/* Messages d'état : connexion / inscription (modale) */
+.asenim-auth-status.is-error { background: #fdecec; color: #a3261d; }
+.asenim-auth-status.is-success { background: #eef7ea; color: #3f7130; }
+
+/* Messages d'état : formulaire de contact */
+.contact-design-status.is-success { color: #3f7130; font-weight: 600; }
+.contact-design-status.is-error { color: #a3261d; font-weight: 600; }
+.contact-design-submit:disabled, .registration-submit:disabled, .asenim-auth-submit:disabled { opacity: .6; cursor: progress; }
+
+/* Newsletter (bientôt disponible) */
+.asenim-newsletter-note { margin: .5rem 0 0; font-size: .8rem; opacity: .85; }
+
+/* Liste des actualités : recherche et état vide */
+.front-search-summary {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem;
+  margin: 0 0 1.5rem; padding: .875rem 1.125rem;
+  border-radius: 12px; background: #f2f7fc; color: #1c2b43; font-size: .95rem;
+}
+.front-search-summary p { margin: 0; }
+.front-search-summary a { color: var(--accent-color3, #0c4f9e); font-weight: 600; text-decoration: none; white-space: nowrap; }
+
+.front-empty { text-align: center; padding: 4rem 1rem; color: #5b6b80; }
+.front-empty i { font-size: 2.5rem; color: var(--accent-color3, #0c4f9e); opacity: .5; }
+.front-empty h2 { font-size: 1.35rem; margin: 1rem 0 .5rem; color: #1c2b43; }
+.front-empty p { margin: 0 auto; max-width: 420px; }
+
+#Act .actualites-pagination a { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+#Act .actualites-pagination .page-arrow.is-disabled { opacity: .35; pointer-events: none; }
+
+/* Article : lien copié */
+.front-copy-status { margin: .75rem 0 0; font-size: .8rem; color: #3f7130; min-height: 1em; }
+
+/* Article : contenu riche saisi avec la barre d'outils de l'administration */
+.news-detail-content > p:first-child {
+  margin-bottom: 17px; color: var(--news-navy); font-size: 14.5px; line-height: 1.52; font-weight: 800;
+}
+.news-detail-content h3 { margin: 16px 0 8px; color: var(--news-navy); font-size: 18px; font-weight: 800; }
+.news-detail-content ul, .news-detail-content ol { margin: 0 0 14px; padding-left: 1.4rem; color: inherit; }
+.news-detail-content li { margin-bottom: 6px; line-height: 1.7; }
+.news-detail-content blockquote {
+  margin: 0 0 16px; padding: 12px 18px; border-left: 4px solid var(--accent-color, #65a74a);
+  background: #f4f9f1; border-radius: 0 12px 12px 0; font-style: italic;
+}
+.news-detail-content a { color: var(--accent-color3, #0c4f9e); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Bureau exécutif : e-mail cliquable sur les cartes */
+.team-card .member-info .email a { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+.team-card .member-info .email a:hover { text-decoration: underline; }

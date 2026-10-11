@@ -78,7 +78,7 @@
                             @endif
                         </div>
                         @if ($item->content)
-                            <p class="news-item-excerpt text-truncate-2">{{ \Illuminate\Support\Str::limit($item->content, 220) }}</p>
+                            <p class="news-item-excerpt text-truncate-2">{{ \App\Support\RichText::excerpt($item->content, 220) }}</p>
                         @endif
                     </div>
 

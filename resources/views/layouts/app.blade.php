@@ -34,7 +34,11 @@
         ];
         if ($authUser && $authUser->isAdmin()) {
             $nav[] = ['section' => 'Administration'];
-            $nav[] = ['label' => 'Utilisateurs', 'icon' => 'bx-group', 'route' => 'users.index', 'match' => ['users.index', 'users.archives', 'store-user', 'users.edit', 'users.edit.*']];
+            $pendingCount = \App\Models\User::pending()->count();
+            $unreadMessages = \App\Models\ContactMessage::unread()->count();
+            $nav[] = ['label' => 'Utilisateurs', 'icon' => 'bx-group', 'route' => 'users.index', 'match' => ['users.index', 'users.archives', 'users.pending', 'store-user', 'users.edit', 'users.edit.*'], 'badge' => $pendingCount, 'badge_label' => 'inscription(s) en attente'];
+            $nav[] = ['label' => 'Messages', 'icon' => 'bx-envelope', 'route' => 'messages.index', 'match' => ['messages.*'], 'badge' => $unreadMessages, 'badge_label' => 'message(s) non lu(s)'];
+            $nav[] = ['label' => 'Bureau exécutif', 'icon' => 'bx-id-card', 'route' => 'board.index', 'match' => ['board.*']];
             $nav[] = ['label' => 'Coordonnées', 'icon' => 'bx-buildings', 'route' => 'company.edit', 'match' => ['company.*']];
         }
         $nav[] = ['section' => 'Espace de travail'];

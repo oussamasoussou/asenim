@@ -5,7 +5,7 @@
         <p class="form-section-text">Présentez votre parcours en quelques lignes.</p>
     </div>
     <div>
-        <x-textarea-field name="biography" label="Biographie" :value="$subject->biography" rows="6"
+        <x-textarea-field name="biography" label="Biographie" :value="$subject->biography" rows="6" rich
             placeholder="Parcours, domaines d’expertise, centres d’intérêt…" />
     </div>
 </div>
@@ -16,7 +16,7 @@
         <p class="form-section-text">Projets en cours, enseignements, responsabilités…</p>
     </div>
     <div>
-        <x-textarea-field name="activities" label="Activités" :value="$subject->activities" rows="6"
-            placeholder="Listez vos principales activités, une par ligne." />
+        <x-textarea-field name="activities" label="Activités" :value="$subject->activities" rows="6" rich
+            placeholder="Projets, enseignements, responsabilités… (utilisez une liste à puces)" />
     </div>
 </div>

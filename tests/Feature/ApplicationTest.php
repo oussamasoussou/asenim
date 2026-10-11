@@ -29,7 +29,7 @@ class ApplicationTest extends TestCase
 
     public function test_guest_is_redirected_to_login(): void
     {
-        $this->get('/')->assertRedirect(route('login'));
+        $this->get('/')->assertOk(); // site public
         $this->get('/index')->assertRedirect(route('login'));
         $this->get('/documents/non-archived')->assertRedirect(route('login'));
         $this->get('/news')->assertRedirect(route('login'));

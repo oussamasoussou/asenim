@@ -35,7 +35,7 @@
                     :label="$type === 'event' ? 'Date et heure de l’événement' : 'Date de publication'" data-date-label />
             </div>
         </div>
-        <x-textarea-field name="content" label="Texte" :value="$item->content ?? null" required rows="8"
+        <x-textarea-field name="content" label="Texte" :value="$item->content ?? null" required rows="8" rich
             placeholder="Rédigez le contenu de la publication…" />
     </div>
 </div>

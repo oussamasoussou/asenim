@@ -46,49 +46,54 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        try {
-            // Valider les champs email et password
-            $credentials = $request->validate([
-                'email' => ['required', 'email'],
-                'password' => ['required'],
-            ]);
-    
-            // Tenter de connecter l'utilisateur
-            if (Auth::attempt($credentials, $request->boolean('remember'))) {
-                $request->session()->regenerate(); // Régénérer la session pour éviter les attaques de fixation de session
-                $user = Auth::user(); // Récupérer l'utilisateur connecté
-                $user->update(['user_connected' => true]);
-    
-                // Vérifier si l'utilisateur est un administrateur
-                if ($user->isAdmin()) {
-                    return redirect()->route('index'); // Rediriger vers l'index pour les administrateurs
-                }
-    
-                // Vérifier si l'utilisateur est un membre
-                if ($user->isMembre()) {
-                    // Vérifier si c'est la première connexion
-                    if ($user->first_connection == 1) {
-                        return redirect()->route('user.edit.personnel.membre.first'); // Rediriger vers la page de mise à jour du profil
-                    } else {
-                        return redirect()->route('index'); // Rediriger vers l'index pour les membres déjà connectés
-                    }
-                }
+        // Les erreurs de validation sont renvoyées telles quelles (JSON pour la modale du site public)
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
+        try {
+            if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+                return $this->loginFailed($request, 'Les identifiants fournis sont incorrects.');
+            }
+
+            $user = Auth::user();
+
+            // Inscription faite depuis le site public, pas encore validée par un administrateur
+            if (!$user->isApproved()) {
+                Auth::logout();
+                return $this->loginFailed($request, 'Votre inscription est en attente de validation par un administrateur. Vous recevrez l’accès dès qu’elle sera acceptée.');
+            }
+
+            if (!$user->isAdmin() && !$user->isMembre()) {
                 // Rôle inconnu : on ne laisse pas la session ouverte
                 Auth::logout();
+                return $this->loginFailed($request, 'Les identifiants fournis sont incorrects.');
             }
-    
-            // Si l'authentification échoue, retourner une erreur
-            return back()->withErrors([
-                'email' => 'Les identifiants fournis sont incorrects.',
-            ])->onlyInput('email');
-    
+
+            $request->session()->regenerate(); // Évite la fixation de session
+            $user->update(['user_connected' => true]);
+
+            $redirect = $user->isMembre() && $user->first_connection == 1
+                ? route('user.edit.personnel.membre.first') // Première connexion : compléter le profil
+                : route('index');
+
+            return $request->expectsJson()
+                ? response()->json(['redirect' => $redirect])
+                : redirect()->to($redirect);
         } catch (\Exception $e) {
-            // En cas d'erreur, retourner un message d'erreur générique
-            return back()->withErrors([
-                'error' => 'Une erreur est survenue lors de la tentative de connexion. Veuillez réessayer.',
-            ]);
+            report($e);
+            return $this->loginFailed($request, 'Une erreur est survenue lors de la tentative de connexion. Veuillez réessayer.', 'error');
         }
+    }
+
+    private function loginFailed(Request $request, string $message, string $field = 'email')
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message, 'errors' => [$field => [$message]]], 422);
+        }
+
+        return back()->withErrors([$field => $message])->onlyInput('email');
     }
 
     public function logout(Request $request)

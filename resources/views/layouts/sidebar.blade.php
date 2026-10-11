@@ -16,6 +16,9 @@
                     <a href="{{ route($item['route']) }}" class="menu-link" @if ($active) aria-current="page" @endif>
                         <i class="menu-icon bx {{ $item['icon'] }}"></i>
                         <div>{{ $item['label'] }}</div>
+                        @if (!empty($item['badge']))
+                            <span class="menu-badge is-alert" title="{{ $item['badge'] }} {{ $item['badge_label'] ?? '' }}">{{ $item['badge'] }}<span class="sr-only"> {{ $item['badge_label'] ?? '' }}</span></span>
+                        @endif
                     </a>
                 </li>
             @endif

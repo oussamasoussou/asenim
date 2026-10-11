@@ -4,7 +4,7 @@
 
 @section('content')
     <x-page-header title="Coordonnées de l’entreprise"
-        subtitle="Adresse, téléphone et e-mail de référence de l’entreprise. Visible et modifiable par les administrateurs." />
+        subtitle="Adresse, téléphone, e-mail et réseaux sociaux de l’entreprise, affichés sur le site public. Modifiable par les administrateurs." />
 
     <div class="row g-4 align-items-start">
         {{-- Formulaire --}}
@@ -38,6 +38,21 @@
                             <x-field name="email" type="email" label="Adresse e-mail" icon="bx-envelope" :value="$company->email"
                                 maxlength="255" placeholder="contact@entreprise.fr" autocomplete="email" />
                         </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div>
+                        <h2 class="form-section-title">Réseaux sociaux</h2>
+                        <p class="form-section-text">Collez l’adresse de chaque page. Les icônes du site public n’apparaissent que pour les réseaux renseignés.</p>
+                    </div>
+                    <div class="row">
+                        @foreach (\App\Models\CompanyInfo::SOCIALS as $field => [$label, , $adminIcon, $domains])
+                            <div class="col-12">
+                                <x-field :name="$field" type="url" :label="$label" :icon="$adminIcon" :value="$company->{$field}"
+                                    maxlength="255" inputmode="url" autocomplete="url" :placeholder="'https://www.' . $domains[0] . '/…'" />
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 
@@ -101,6 +116,21 @@
                                 @else
                                     <p class="contact-value text-muted">Non renseigné</p>
                                 @endif
+                            </div>
+                        </li>
+                        <li>
+                            <span class="stat-icon badge-info"><i class="bx bx-share-alt"></i></span>
+                            <div class="min-w-0 flex-grow-1">
+                                <p class="contact-label">Réseaux sociaux</p>
+                                @forelse ($company->socialLinks() as $social)
+                                    <a href="{{ $social['url'] }}" target="_blank" rel="noopener" class="social-preview">
+                                        <i class="bx {{ $social['admin_icon'] }}" aria-hidden="true"></i>
+                                        <span class="text-truncate">{{ $social['label'] }}</span>
+                                        <i class="bx bx-link-external ms-auto text-muted" aria-hidden="true"></i>
+                                    </a>
+                                @empty
+                                    <p class="contact-value text-muted">Aucun réseau renseigné</p>
+                                @endforelse
                             </div>
                         </li>
                     </ul>

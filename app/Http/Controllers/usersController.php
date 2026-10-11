@@ -81,7 +81,7 @@ class usersController extends Controller
         $order = strtolower(request()->get('order', 'asc')) === 'desc' ? 'desc' : 'asc';
         $search = request()->get('search');
 
-        $query = User::where('id', '!=', $userConnected ? $userConnected->id : 0);
+        $query = User::approved()->where('id', '!=', $userConnected ? $userConnected->id : 0);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -202,6 +202,7 @@ class usersController extends Controller
             $user->password = Hash::make('123456789');
             $user->name = $name;
             $user->first_connection = 1;
+            $user->approved_at = now(); // créé par un administrateur : validé d'office
             $user->save();
 
             return redirect()->route('users.index')->with('success', 'Compte créé. Mot de passe provisoire : 123456789.');
