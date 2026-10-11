@@ -1,59 +1,47 @@
 @extends('layouts.app')
 
-@section('title', 'Mettre à jour un document')
+@section('title', 'Modifier le document')
 
 @section('content')
-<div class="col-xl">
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Mettre à jour le document</h5>
+    <x-page-header title="Modifier le document" :back="route('documents.non_archived')" :subtitle="$documents->file_name">
+        <a href="{{ asset('storage/' . $documents->file_path) }}" target="_blank" rel="noopener" class="btn btn-secondary"><i class="bx bx-show"></i>Ouvrir le fichier</a>
+    </x-page-header>
+
+    <form method="POST" action="{{ route('documents.update', $documents->id) }}" enctype="multipart/form-data" class="card" novalidate>
+        @csrf
+        @method('PUT')
+
+        <div class="form-section">
+            <div>
+                <h2 class="form-section-title">Informations</h2>
+                <p class="form-section-text">Titre affiché et visibilité du document.</p>
+            </div>
+            <div>
+                <x-field name="file_name" label="Titre du document" :value="$documents->file_name" required maxlength="255" />
+                @include('pages.document.partials.audience-fields', ['current' => old('member_type', $documents->member_type)])
+            </div>
         </div>
-        <div class="card-body">
-            <form method="POST" action="{{ route('documents.update', $documents->id) }}" enctype="multipart/form-data">
-                @csrf
-                @method('PUT') 
-                <!-- Nom du fichier -->
-                <div class="mb-3">
-                    <label class="form-label" for="file_name">Nom du fichier</label>
-                    <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-file2" class="input-group-text"><i class="bx bx-file"></i></span>
-                        <input type="text" class="form-control" id="file_name" name="file_name"
-                            value="{{ old('file_name', $documents->file_name) }}" placeholder="Nom du fichier">
-                    </div>
-                    @error('file_name')
-                        <span class="text-danger">* {{ $message }}</span>
-                    @enderror
-                </div>
 
-                <!-- Type de membre -->
-                <div class="mb-3">
-                    <label for="member_type" class="form-label">Type de membre</label>
-                    <select id="member_type" name="member_type" class="form-control">
-                        <option value="all_members" {{ old('member_type', $documents->member_type) == 'all_members' ? 'selected' : '' }}>Tous les membres</option>
-                        <option value="permanent" {{ old('member_type', $documents->member_type) == 'permanent' ? 'selected' : '' }}>Permanent</option>
-                        <option value="non_permanent" {{ old('member_type', $documents->member_type) == 'non_permanent' ? 'selected' : '' }}>Non Permanent</option>
-                    </select>
-                    @error('member_type')
-                        <span class="text-danger">* {{ $message }}</span>
-                    @enderror
+        <div class="form-section">
+            <div>
+                <h2 class="form-section-title">Remplacer le fichier</h2>
+                <p class="form-section-text">Facultatif. Laissez vide pour conserver le fichier actuel.</p>
+            </div>
+            <div>
+                <div class="doc-tile mb-3">
+                    <x-file-icon :path="$documents->file_path" />
+                    <span class="min-w-0">
+                        <span class="doc-tile-name d-block">Fichier actuel</span>
+                        <span class="doc-tile-meta">Ajouté le {{ $documents->created_at?->translatedFormat('j F Y') }}</span>
+                    </span>
                 </div>
-
-                <!-- Upload du fichier -->
-                <div class="mb-3">
-                    <label for="file" class="form-label">Fichier</label>
-                    <input class="form-control" type="file" id="file" name="file" accept="application/pdf, image/*">
-                    @error('file')
-                        <span class="text-danger">* {{ $message }}</span>
-                    @enderror
-                    <!-- Afficher l'ancien fichier -->
-                    @if($documents->file)
-                        <p>Ancien fichier : <a href="{{ asset('storage/documents/' . $documents->file) }}" target="_blank">{{ $documents->file }}</a></p>
-                    @endif
-                </div>
-
-                <button type="submit" class="btn btn-primary">Mettre à jour</button>
-            </form>
+                <x-dropzone name="file" accept="application/pdf,image/png,image/jpeg" hint="PDF, JPG ou PNG · 10 Mo max." />
+            </div>
         </div>
-    </div>
-</div>
+
+        <div class="form-actions">
+            <a href="{{ route('documents.non_archived') }}" class="btn btn-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary"><span><i class="bx bx-check"></i> Enregistrer</span></button>
+        </div>
+    </form>
 @endsection

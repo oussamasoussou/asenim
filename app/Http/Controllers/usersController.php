@@ -55,21 +55,30 @@ class usersController extends Controller
     }
     public function editMembreProfile($id)
     {
+        // Ancienne page « tout-en-un » : redirige vers le profil à onglets correspondant.
         $user = User::findOrFail($id);
         $userConnected = Auth::user();
 
-        return view('pages.users.editConnectedUserMembre', compact('userConnected', 'user'));
+        if ($userConnected->isAdmin() && (int) $user->id !== (int) $userConnected->id) {
+            return redirect()->route('users.edit', $user->id);
+        }
+
+        return redirect()->route('users.editConnectedUser');
     }
     public function index()
     {
         $userConnected = Auth::user();
-        $perPage = request()->get('perPage', 10);
+        $perPage = request()->get('perPage', 5);
         $page = request()->get('page', 1);
+
+        $perPage = max(1, min(100, (int) $perPage));
+        $page = max(1, (int) $page);
 
         $sort = request()->get('sort', 'first_name');
         if ($sort == 'name') $sort = 'first_name';
-        
-        $order = request()->get('order', 'asc');
+        if (!in_array($sort, ['first_name', 'last_name', 'email', 'phone', 'role', 'type', 'created_at', 'deleted_at'], true)) $sort = 'first_name';
+
+        $order = strtolower(request()->get('order', 'asc')) === 'desc' ? 'desc' : 'asc';
         $search = request()->get('search');
 
         $query = User::where('id', '!=', $userConnected ? $userConnected->id : 0);
@@ -87,6 +96,7 @@ class usersController extends Controller
 
         $totalUsers = $query->count();
         $totalPages = ceil($totalUsers / $perPage);
+        $page = min($page, max(1, (int) $totalPages));
 
         $users = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
@@ -103,19 +113,23 @@ class usersController extends Controller
             ]);
         }
 
-        return view('pages.users.index', compact('users', 'userConnected', 'page', 'totalPages', 'perPage'));
+        return view('pages.users.index', compact('users', 'userConnected', 'page', 'totalPages', 'perPage', 'totalUsers'));
     }
 
     public function listArchives()
     {
         $userConnected = Auth::user();
-        $perPage = request()->get('perPage', 10);
+        $perPage = request()->get('perPage', 5);
         $page = request()->get('page', 1);
+
+        $perPage = max(1, min(100, (int) $perPage));
+        $page = max(1, (int) $page);
 
         $sort = request()->get('sort', 'first_name');
         if ($sort == 'name') $sort = 'first_name';
-        
-        $order = request()->get('order', 'asc');
+        if (!in_array($sort, ['first_name', 'last_name', 'email', 'phone', 'role', 'type', 'created_at', 'deleted_at'], true)) $sort = 'first_name';
+
+        $order = strtolower(request()->get('order', 'asc')) === 'desc' ? 'desc' : 'asc';
         $search = request()->get('search');
 
         $query = User::onlyTrashed();
@@ -133,6 +147,7 @@ class usersController extends Controller
 
         $totalUsers = $query->count();
         $totalPages = ceil($totalUsers / $perPage);
+        $page = min($page, max(1, (int) $totalPages));
 
         $users = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
@@ -149,7 +164,7 @@ class usersController extends Controller
             ]);
         }
 
-        return view('pages.users.archives', compact('users', 'userConnected', 'page', 'totalPages', 'perPage', 'sort', 'order'));
+        return view('pages.users.archives', compact('users', 'userConnected', 'page', 'totalPages', 'perPage', 'sort', 'order', 'totalUsers'));
     }
 
     public function store(StoreUserRequest $request)
@@ -189,7 +204,7 @@ class usersController extends Controller
             $user->first_connection = 1;
             $user->save();
 
-            return redirect()->route('users.index')->with('success', 'Utilisateur créé avec succès.');
+            return redirect()->route('users.index')->with('success', 'Compte créé. Mot de passe provisoire : 123456789.');
         } catch (\Exception $e) {
             return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la création de l\'utilisateur. Veuillez réessayer.');
         }
@@ -248,6 +263,7 @@ class usersController extends Controller
                 ? \Carbon\Carbon::createFromFormat('Y-m-d', $request->birth_date)->format('Y-m-d')
                 : $user->birth_date;
 
+            $user->name = $name;
             if ($request->has('first_name')) {
                 $user->first_name = $validatedData['first_name'];
             }
@@ -272,7 +288,7 @@ class usersController extends Controller
             $user->save();
 
 
-            return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->back()->with('success', 'Modifications enregistrées.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -299,7 +315,7 @@ class usersController extends Controller
             }
             $user->save();
 
-            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->back()->with('success', 'Modifications enregistrées.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -320,7 +336,7 @@ class usersController extends Controller
 
             $user->save();
 
-            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->back()->with('success', 'Modifications enregistrées.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -381,6 +397,7 @@ class usersController extends Controller
                 ? \Carbon\Carbon::createFromFormat('Y-m-d', $request->birth_date)->format('Y-m-d')
                 : $user->birth_date;
 
+            $user->name = $name;
             if ($request->has('first_name')) {
                 $user->first_name = $validatedData['first_name'];
             }
@@ -396,13 +413,12 @@ class usersController extends Controller
             if ($request->has('type')) {
                 $user->type = $validatedData['type'];
             }
+            $user->image = $validatedData['image'];
             $user->save();
 
-            return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour avec succès.');
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
+            return redirect()->back()->with('success', 'Modifications enregistrées.');
         } catch (\Exception $e) {
-            return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
         }
     }
     public function updateUserProfessionnelle(Request $request)
@@ -424,7 +440,7 @@ class usersController extends Controller
             }
 
             $user->save();
-            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->back()->with('success', 'Modifications enregistrées.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -446,7 +462,7 @@ class usersController extends Controller
             $user->save();
 
 
-            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->back()->with('success', 'Modifications enregistrées.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -532,6 +548,7 @@ class usersController extends Controller
                 ? \Carbon\Carbon::createFromFormat('Y-m-d', $request->birth_date)->format('Y-m-d')
                 : $user->birth_date;
 
+            $user->name = $name;
             if ($request->has('first_name')) {
                 $user->first_name = $validatedData['first_name'];
             }
@@ -547,13 +564,14 @@ class usersController extends Controller
             if ($request->has('type')) {
                 $user->type = $validatedData['type'];
             }
+            $user->image = $validatedData['image'];
             $user->save();
 
-            return redirect()->route('user.edit.professionnelle.membre.first')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->route('user.edit.professionnelle.membre.first')->with('success', 'Modifications enregistrées.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
+            return redirect()->back()->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
-            return redirect()->route('users.index')->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur. Veuillez réessayer.');
         }
     }
     public function firstConnectionProfessionnelle(Request $request)
@@ -575,7 +593,7 @@ class usersController extends Controller
             }
 
             $user->save();
-            return redirect()->route('user.edit.biography.membre.first')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->route('user.edit.biography.membre.first')->with('success', 'Modifications enregistrées.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -598,7 +616,7 @@ class usersController extends Controller
             $user->save();
 
 
-            return redirect()->route('index')->with('success', 'Utilisateur mis à jour avec succès.');
+            return redirect()->route('index')->with('success', 'Votre profil est complet. Bienvenue !');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -616,7 +634,7 @@ class usersController extends Controller
             $user = User::findOrFail($id);
             $user->delete();
 
-            return redirect()->route('users.index')->with('success', 'Utilisateur supprimé avec succès.');
+            return redirect()->route('users.index')->with('success', 'Utilisateur archivé. Vous pouvez le restaurer depuis les archives.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -631,11 +649,11 @@ class usersController extends Controller
             }
 
 
-            $user = User::onlyTrashed()->find($id);
+            $user = User::onlyTrashed()->findOrFail($id);
             $user->restore();
 
 
-            return redirect()->route('users.index')->with('success', 'Utilisateur restore avec succès.');
+            return redirect()->route('users.index')->with('success', 'Compte restauré.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
         } catch (\Exception $e) {
@@ -652,7 +670,7 @@ class usersController extends Controller
             $user = User::findOrFail($id);
             $user->password = Hash::make('123456789');
             $user->save();
-            return redirect()->route('users.index')->with('success', 'Mot de passe réinitialisé à "123456789" avec succès.');
+            return redirect()->back()->with('success', 'Mot de passe réinitialisé à la valeur par défaut (123456789).');
         } catch (\Exception $e) {
             return redirect()->route('users.index')->with('error', 'Utilisateur introuvable.');
         }

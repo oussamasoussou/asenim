@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('title', 'Accès refusé')
+@section('code', '403')
+@section('icon', 'bx-lock-alt')
+@section('heading', 'Accès refusé')
+@section('message', 'Vous n’avez pas les droits nécessaires pour effectuer cette action. Seul l’auteur du contenu ou un administrateur peut le modifier.')

@@ -12,7 +12,7 @@ class ChatGroupeController extends Controller
     public function index()
     {
         $userConnected = Auth::user();
-        $connectedUsers = User::where('user_connected', 1)->get(['id', 'first_name', 'last_name']);
+        $connectedUsers = User::where('user_connected', 1)->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'image']);
 
         $userId = auth()->id(); // ID de l'utilisateur connecté
 
@@ -26,7 +26,7 @@ class ChatGroupeController extends Controller
     public function sendMessage(Request $request)
     {
         // Récupérer les utilisateurs connectés
-        $connectedUsers = User::where('user_connected', 1)->get(['id', 'first_name', 'last_name']);
+        $connectedUsers = User::where('user_connected', 1)->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'image']);
     
         // Récupérer l'ID de l'utilisateur connecté
         $userId = auth()->id();
@@ -36,7 +36,7 @@ class ChatGroupeController extends Controller
     
         // Validation des données
         $validated = $request->validate([
-            'content' => 'nullable|string', 
+            'content' => 'nullable|string|max:5000|required_without:file',
             'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,docx,txt|max:2048', 
         ]);
     

@@ -19,8 +19,37 @@ class DocumentController extends Controller
     public function edit($id)
     {
         $documents = Documents::findOrFail($id);
+        $this->authorizeOwner($documents);
         $userConnected = Auth::user();
         return view('pages.document.edit', compact('documents', 'userConnected'));
+    }
+
+    /**
+     * Seul l'admin ou l'auteur du document peut le modifier / supprimer / restaurer.
+     */
+    private function authorizeOwner(Documents $document): void
+    {
+        $user = Auth::user();
+        abort_unless($user && ($user->isAdmin() || (int) $document->user_id === (int) $user->id), 403);
+    }
+
+    /**
+     * Normalise les paramètres de tri / pagination reçus en query string.
+     */
+    private function listParams(): array
+    {
+        $sort = request()->get('sort', 'file_name');
+        if (!in_array($sort, ['file_name', 'member_type', 'created_at', 'updated_at', 'deleted_at'], true)) {
+            $sort = 'file_name';
+        }
+        $order = strtolower(request()->get('order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        return [
+            max(1, min(100, (int) request()->get('perPage', 5))),
+            max(1, (int) request()->get('page', 1)),
+            $sort,
+            $order,
+        ];
     }
 
     /**
@@ -29,10 +58,7 @@ class DocumentController extends Controller
     public function indexNonArchived()
     {
         $userConnected = Auth::user();
-        $perPage = request()->get('perPage', 10); // Nombre d'éléments par page
-        $page = request()->get('page', 1);        // Page actuelle
-        $sort = request()->get('sort', 'file_name');  // Colonne de tri
-        $order = request()->get('order', 'asc'); // Ordre de tri
+        [$perPage, $page, $sort, $order] = $this->listParams();
         $search = request()->get('search');
     
         // Vérification de l'utilisateur connecté
@@ -65,6 +91,7 @@ class DocumentController extends Controller
         // Calcul des totaux pour la pagination
         $totalDocuments = $query->count();
         $totalPages = ceil($totalDocuments / $perPage);
+        $page = min($page, max(1, (int) $totalPages));
 
         // Appliquer tri et pagination
         $documents = $query->orderBy($sort, $order)
@@ -83,7 +110,7 @@ class DocumentController extends Controller
             ]);
         }
 
-        return view('pages.document.index', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage'));
+        return view('pages.document.index', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage', 'totalDocuments'));
     }
     
     
@@ -93,10 +120,7 @@ class DocumentController extends Controller
     public function indexArchived()
     {
         $userConnected = Auth::user();
-        $perPage = request()->get('perPage', 10); // Nombre d'éléments par page
-        $page = request()->get('page', 1);        // Page actuelle
-        $sort = request()->get('sort', 'file_name');  // Colonne de tri
-        $order = request()->get('order', 'asc'); // Ordre de tri
+        [$perPage, $page, $sort, $order] = $this->listParams();
         $search = request()->get('search');
     
         // Vérification de l'utilisateur connecté
@@ -126,16 +150,17 @@ class DocumentController extends Controller
             });
         }
     
+        // Calcul des totaux pour la pagination (avant skip/take, sinon le count est faussé)
+        $totalDocuments = $query->count();
+        $totalPages = ceil($totalDocuments / $perPage);
+        $page = min($page, max(1, (int) $totalPages));
+
         // Appliquer tri et pagination
         $documents = $query->orderBy($sort, $order)
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
-    
-        // Calcul des totaux pour la pagination
-        $totalDocuments = $query->count();
-        $totalPages = ceil($totalDocuments / $perPage);
-    
+
         if (request()->ajax()) {
             return response()->json([
                 'documents' => $documents,
@@ -147,7 +172,7 @@ class DocumentController extends Controller
             ]);
         }
 
-        return view('pages.document.archive', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage'));
+        return view('pages.document.archive', compact('documents', 'userConnected', 'page', 'totalPages', 'perPage', 'totalDocuments'));
     }
     
     /**
@@ -170,7 +195,7 @@ class DocumentController extends Controller
             'user_id' => auth()->id(), 
         ]);
     
-        return redirect()->route('documents.non_archived')->with('success', 'Document créé avec succès.');
+        return redirect()->route('documents.non_archived')->with('success', 'Document publié.');
     }
     
 
@@ -183,36 +208,32 @@ class DocumentController extends Controller
         $request->validate([
             'file_name' => 'required|string|max:255',
             'member_type' => 'required|in:all_members,permanent,non_permanent',
-            'file' => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:2048',
+            'file' => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:10240',
         ]);
-    
+
         // Récupérer le document existant
         $document = Documents::findOrFail($id);
-    
+        $this->authorizeOwner($document);
+
         // Mettre à jour les champs du document
         $document->file_name = $request->input('file_name');
         $document->member_type = $request->input('member_type');
-    
+
         // Vérifier si un fichier a été téléchargé
         if ($request->hasFile('file')) {
             // Supprimer l'ancien fichier s'il existe
-            if (Storage::exists('documents/' . $document->file)) {
-                Storage::delete('documents/' . $document->file);
+            if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
             }
-    
-            // Enregistrer le nouveau fichier
-            $file = $request->file('file');
-            $fileName = $file->getClientOriginalName();
-            $filePath = $file->storeAs('documents', $fileName);
-    
-            // Mettre à jour le nom du fichier dans la base de données
-            $document->file = $fileName;
+
+            // Enregistrer le nouveau fichier (même disque que store())
+            $document->file_path = $request->file('file')->store('documents', 'public');
         }
     
         // Sauvegarder les modifications
         $document->save();
     
-        return redirect()->route('documents.non_archived')->with('success', 'Document mis à jour avec succès.');
+        return redirect()->route('documents.non_archived')->with('success', 'Document mis à jour.');
     }
     
 
@@ -222,9 +243,10 @@ class DocumentController extends Controller
     public function delete($id)
     {
         $document = Documents::findOrFail($id);
+        $this->authorizeOwner($document);
         $document->delete();
 
-        return redirect()->route('documents.non_archived')->with('success', 'Document supprimé avec succès.');
+        return redirect()->route('documents.non_archived')->with('success', 'Document archivé. Vous pouvez le restaurer depuis les archives.');
     }
 
     /**
@@ -233,11 +255,12 @@ class DocumentController extends Controller
     public function restore($id)
     {
         $document = Documents::withTrashed()->findOrFail($id);
+        $this->authorizeOwner($document);
 
         if ($document->trashed()) {
             $document->restore();
         }
 
-        return redirect()->route('documents.non_archived')->with('success', 'Document restore avec succès.');
+        return redirect()->route('documents.non_archived')->with('success', 'Document restauré.');
     }
 }

@@ -1,91 +1,54 @@
-<nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
-    id="layout-navbar">
-    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
-            <i class="bx bx-menu bx-sm"></i>
+@php
+    $authUser = $authUser ?? Auth::user();
+    $currentSection = $currentSection ?? null;
+@endphp
+<nav class="layout-navbar navbar app-topbar d-flex align-items-center" id="layout-navbar" aria-label="Barre supérieure">
+    <div class="layout-menu-toggle d-xl-none me-2">
+        <a class="topbar-icon-btn" href="javascript:void(0)" aria-label="Ouvrir le menu">
+            <i class="bx bx-menu"></i>
         </a>
     </div>
 
-    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-        <!-- Search -->
+    <div class="min-w-0 d-none d-sm-block">
+        @if ($currentSection)
+            <p class="topbar-title text-truncate">{{ $currentSection['label'] }}</p>
+        @else
+            <p class="topbar-title">Mon compte</p>
+        @endif
+    </div>
 
-        <!-- /Search -->
+    <div class="d-flex align-items-center gap-2 ms-auto">
+        <a href="{{ route('chat.index') }}" class="topbar-icon-btn" aria-label="Messagerie" title="Messagerie">
+            <i class="bx bx-chat"></i>
+        </a>
 
-        <ul class="navbar-nav flex-row align-items-center ms-auto">
-            <!-- Place this tag where you want the button to render. -->
-            <li class="nav-item lh-1 me-3">
-                @if(isset($userConnected) && $userConnected)
-                    <span class="d-block">{{ $userConnected->first_name }}
-                        {{ $userConnected->last_name }}</span>
-                @else
-                    <span class="d-block">Utilisateur</span>
-                @endif
-            </li>
-
-            <!-- User -->
-            <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                    <div class="avatar avatar-online">
-                        <img src="{{ asset(path: 'storage/' . $userConnected->image) }}" alt
-                            class="w-px-40 h-auto rounded-circle" />
-                    </div>
-                </a>
+        @if ($authUser)
+            <div class="dropdown">
+                <button class="topbar-user" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu du compte">
+                    <x-avatar :user="$authUser" size="sm" />
+                    <span class="d-none d-md-inline fw-semibold small">{{ $authUser->first_name }}</span>
+                    <i class="bx bx-chevron-down"></i>
+                </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="avatar avatar-online">
-                                        <img src="{{ asset('storage/' . $userConnected->image) }}" alt
-                                            class="w-px-40 h-auto rounded-circle" />
-
-
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    @if(isset($userConnected) && $userConnected)
-                                        <span class="d-block">{{ $userConnected->first_name }}
-                                            {{ $userConnected->last_name }}</span>
-                                        <small class="text-muted">{{ $userConnected->role }}</small>
-                                    @else
-                                        <span class="d-block">Utilisateur</span>
-                                        <small class="text-muted">Profil</small>
-                                    @endif
-                                </div>
-                            </div>
-                        </a>
+                    <li class="dropdown-header-user">
+                        <x-avatar :user="$authUser" />
+                        <div class="min-w-0">
+                            <div class="fw-semibold text-body-strong text-truncate">{{ $authUser->first_name }} {{ $authUser->last_name }}</div>
+                            <div class="text-muted text-xs text-truncate">{{ $authUser->email }}</div>
+                        </div>
                     </li>
-
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ route('users.editConnectedUser') }}"><i class="bx bx-user-circle"></i>Mon profil</a></li>
+                    <li><a class="dropdown-item" href="{{ route('users.edit.security') }}"><i class="bx bx-lock-alt"></i>Sécurité</a></li>
+                    <li><hr class="dropdown-divider"></li>
                     <li>
-                        <div class="dropdown-divider"></div>
-                    </li>
-                 
-                    <li>
-                        <form action="{{ route('users.editConnectedUser') }}" method="GET" style="display: none;"
-                            id="profile-form">
+                        <form action="{{ route('logout') }}" method="POST" data-no-loading>
                             @csrf
+                            <button type="submit" class="dropdown-item is-danger w-100"><i class="bx bx-log-out"></i>Se déconnecter</button>
                         </form>
-                        <a class="dropdown-item" href="javascript:void(0);"
-                            onclick="document.getElementById('profile-form').submit();">
-                            <i class="bx bxs-user-detail me-2"></i>
-                            <span class="align-middle">Profil</span>
-                        </a>
                     </li>
-
-                    <li>
-                        <form action="{{ route('logout') }}" method="POST" style="display: none;" id="logout-form">
-                            @csrf
-                        </form>
-                        <a class="dropdown-item" href="javascript:void(0);"
-                            onclick="document.getElementById('logout-form').submit();">
-                            <i class="bx bx-power-off me-2"></i>
-                            <span class="align-middle">Déconnexion</span>
-                        </a>
-                    </li>
-
                 </ul>
-            </li>
-            <!--/ User -->
-        </ul>
+            </div>
+        @endif
     </div>
 </nav>

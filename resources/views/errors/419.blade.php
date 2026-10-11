@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('title', 'Session expirée')
+@section('code', '419')
+@section('icon', 'bx-time-five')
+@section('heading', 'Votre session a expiré')
+@section('message', 'Pour votre sécurité, la page a expiré après une période d’inactivité. Revenez en arrière, actualisez la page puis réessayez.')

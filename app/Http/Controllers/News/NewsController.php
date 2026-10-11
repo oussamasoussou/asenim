@@ -20,62 +20,78 @@ class NewsController extends Controller
 
     public function edit(News $news)
     {
+        $this->authorizeOwner($news);
         $userConnected = Auth::user();
         return view('pages.news.edit', compact('userConnected', 'news'));
     }
 
     public function index()
     {
-        $userConnected = Auth::user();
-
-        $newsQuery = News::where('events_news', 'news')
-            ->whereHas('user', function ($query) {
-                $query->whereNull('deleted_at'); // Exclure les utilisateurs supprimés
-            });
-
-        $eventsQuery = News::where('events_news', 'event')
-            ->whereHas('user', function ($query) {
-                $query->whereNull('deleted_at');
-            });
-
-        if (!$userConnected->isAdmin()) {
-            $newsQuery->where('user_id', $userConnected->id);
-            $eventsQuery->where('user_id', $userConnected->id);
-        }
-
-        $news = $newsQuery->with('user')->get();
-        $events = $eventsQuery->with('user')->get();
-
-        return view('pages.news.index', compact('news', 'events', 'userConnected'));
+        return view('pages.news.index', $this->listing(false));
     }
-
-
 
     public function indexArchived()
     {
+        return view('pages.news.archive', $this->listing(true));
+    }
+
+    /**
+     * Données d'une liste paginée d'actualités ou d'événements (onglet ?tab=news|events),
+     * avec recherche (?search=) et pagination (?page=, ?perPage=, 5 par défaut).
+     */
+    private function listing(bool $archived): array
+    {
         $userConnected = Auth::user();
+        $tab = request('tab') === 'events' ? 'events' : 'news';
+        $search = trim((string) request('search'));
+        $perPage = max(1, min(100, (int) request('perPage', 5)));
+        $page = max(1, (int) request('page', 1));
 
+        $base = function (string $type) use ($archived, $userConnected, $search) {
+            $query = ($archived ? News::onlyTrashed() : News::query())
+                ->where('events_news', $type)
+                ->whereHas('user', fn ($q) => $q->whereNull('deleted_at')); // Exclure les auteurs archivés
 
-        $newsQuery = News::onlyTrashed()->where('events_news', 'news')
-            ->whereHas('user', function ($query) {
-                $query->whereNull('deleted_at');
-            });
+            if (!$userConnected->isAdmin()) {
+                $query->where('user_id', $userConnected->id);
+            }
 
-        $eventsQuery = News::onlyTrashed()->where('events_news', 'event')
-            ->whereHas('user', function ($query) {
-                $query->whereNull('deleted_at');
-            });
+            if ($search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'LIKE', "%{$search}%")
+                        ->orWhere('content', 'LIKE', "%{$search}%")
+                        ->orWhereHas('user', function ($u) use ($search) {
+                            $u->where('first_name', 'LIKE', "%{$search}%")
+                                ->orWhere('last_name', 'LIKE', "%{$search}%")
+                                ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+                        });
+                });
+            }
 
+            return $query;
+        };
 
-        if (!$userConnected->isAdmin()) {
-            $newsQuery->where('user_id', $userConnected->id);
-            $eventsQuery->where('user_id', $userConnected->id);
+        $newsCount = $base('news')->count();
+        $eventsCount = $base('event')->count();
+        $total = $tab === 'events' ? $eventsCount : $newsCount;
+        $totalPages = max(1, (int) ceil($total / $perPage));
+        $page = min($page, $totalPages);
+
+        $query = $base($tab === 'events' ? 'event' : 'news')->with('user');
+        if ($archived) {
+            $query->latest('deleted_at');
+        } elseif ($tab === 'events') {
+            // Événements : à venir d'abord (du plus proche au plus lointain), puis passés (du plus récent au plus ancien)
+            $query->orderByRaw('CASE WHEN date >= ? THEN 0 ELSE 1 END', [now()])
+                ->orderByRaw('CASE WHEN date >= ? THEN date END ASC', [now()])
+                ->orderByDesc('date');
+        } else {
+            $query->latest();
         }
 
-        $news = $newsQuery->get();
-        $events = $eventsQuery->get();
+        $items = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
 
-        return view('pages.news.archive', compact('news', 'events', 'userConnected'));
+        return compact('items', 'tab', 'newsCount', 'eventsCount', 'total', 'totalPages', 'page', 'perPage', 'userConnected');
     }
 
 
@@ -103,25 +119,28 @@ class NewsController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('news.index')->with('success', 'Actualité ou événement ajouté avec succès.');
+        return redirect()->route('news.index', ['tab' => $validatedData['events_news'] === 'event' ? 'events' : 'news'])->with('success', $validatedData['events_news'] === 'event' ? 'Événement publié.' : 'Actualité publiée.');
     }
 
     public function update(Request $request, News $news)
     {
+        $this->authorizeOwner($news);
         $request->validate([
             'title' => 'required|string|max:255',
             'events_news' => 'required|in:news,event',
             'content' => 'required|string',
+            'date' => 'required|date',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        $news->date = $request->input('date');
         $news->title = $request->input('title');
         $news->events_news = $request->input('events_news');
         $news->content = $request->input('content');
 
         if ($request->hasFile('image')) {
             if ($news->image) {
-                Storage::delete('public/' . $news->image);
+                Storage::disk('public')->delete($news->image);
             }
 
             $path = $request->file('image')->store('news_images', 'public');
@@ -130,7 +149,7 @@ class NewsController extends Controller
 
         $news->save();
 
-        return redirect()->route('news.index')->with('success', 'Actualité/Événement mis à jour avec succès!');
+        return redirect()->route('news.index', ['tab' => $news->events_news === 'event' ? 'events' : 'news'])->with('success', 'Publication mise à jour.');
     }
 
 
@@ -140,9 +159,10 @@ class NewsController extends Controller
     public function delete($id)
     {
         $news = News::findOrFail($id);
+        $this->authorizeOwner($news);
         $news->delete();
 
-        return redirect()->route('news.index')->with('success', 'actualité ou événement supprimé avec succès.');
+        return redirect()->back()->with('success', 'Publication archivée.');
     }
 
     /**
@@ -151,12 +171,21 @@ class NewsController extends Controller
     public function restore($id)
     {
         $news = News::withTrashed()->findOrFail($id);
+        $this->authorizeOwner($news);
 
         if ($news->trashed()) {
             $news->restore();
         }
 
-        return redirect()->route('news.index')->with('success', 'actualité ou événement restaure avec succès.');
+        return redirect()->back()->with('success', 'Publication restaurée.');
     }
 
+    /**
+     * Seul l'admin ou l'auteur peut modifier / supprimer / restaurer.
+     */
+    private function authorizeOwner(News $news): void
+    {
+        $user = Auth::user();
+        abort_unless($user && ($user->isAdmin() || (int) $news->user_id === (int) $user->id), 403);
+    }
 }

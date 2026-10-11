@@ -20,17 +20,28 @@ class AuthController extends Controller
     public function showAdminDashboard()
     {
         $userConnected = Auth::user();
-        $users = User::all();
-        $news = News::all();
-        $documents = Documents::all();
 
-        return view('index', compact('users', 'news', 'userConnected', 'documents'));
+        $stats = [
+            'users' => $userConnected->isAdmin() ? User::count() : null,
+            'online' => User::where('user_connected', true)->count(),
+            'documents' => Documents::count(),
+            'news' => News::where('events_news', 'news')->count(),
+            'events' => News::where('events_news', 'event')->where('date', '>=', now())->count(),
+        ];
+
+        $news = News::with('user')->where('events_news', 'news')->latest()->take(5)->get();
+        $events = News::with('user')->where('events_news', 'event')
+            ->where('date', '>=', now()->startOfDay())
+            ->orderBy('date')->take(5)->get();
+        $documents = Documents::with('user')->latest()->take(6)->get();
+
+        return view('index', compact('stats', 'news', 'events', 'userConnected', 'documents'));
     }
 
 
     public function showMembreDashboard()
     {
-        return view('membre');
+        return redirect()->route('index');
     }
 
     public function login(Request $request)
@@ -43,7 +54,7 @@ class AuthController extends Controller
             ]);
     
             // Tenter de connecter l'utilisateur
-            if (Auth::attempt($credentials)) {
+            if (Auth::attempt($credentials, $request->boolean('remember'))) {
                 $request->session()->regenerate(); // Régénérer la session pour éviter les attaques de fixation de session
                 $user = Auth::user(); // Récupérer l'utilisateur connecté
                 $user->update(['user_connected' => true]);
@@ -57,11 +68,14 @@ class AuthController extends Controller
                 if ($user->isMembre()) {
                     // Vérifier si c'est la première connexion
                     if ($user->first_connection == 1) {
-                        return redirect()->route('user.edit.personnel.membre.first', $user->id); // Rediriger vers la page de mise à jour du profil
+                        return redirect()->route('user.edit.personnel.membre.first'); // Rediriger vers la page de mise à jour du profil
                     } else {
                         return redirect()->route('index'); // Rediriger vers l'index pour les membres déjà connectés
                     }
                 }
+
+                // Rôle inconnu : on ne laisse pas la session ouverte
+                Auth::logout();
             }
     
             // Si l'authentification échoue, retourner une erreur

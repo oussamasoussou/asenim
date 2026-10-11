@@ -26,7 +26,8 @@ class UpdateUserConnectedRequest extends FormRequest
             'last_name' => 'sometimes|string|max:255',
             'phone' => [
                 'sometimes',
-                'integer',
+                'string',
+                'max:20',
             ],
             'birth_date' => 'nullable|date',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',

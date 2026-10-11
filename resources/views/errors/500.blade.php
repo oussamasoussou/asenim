@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('title', 'Erreur serveur')
+@section('code', '500')
+@section('icon', 'bx-error')
+@section('heading', 'Une erreur est survenue')
+@section('message', 'Le serveur n’a pas pu traiter votre demande. Réessayez dans quelques instants ; si le problème persiste, contactez un administrateur.')

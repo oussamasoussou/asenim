@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('title', 'Page introuvable')
+@section('code', '404')
+@section('icon', 'bx-search-alt')
+@section('heading', 'Page introuvable')
+@section('message', 'La page demandée n’existe pas ou a été déplacée. Le contenu a peut-être été archivé.')
